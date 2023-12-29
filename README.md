@@ -16,7 +16,7 @@ CopilotforXcodeKit is a Swift package that offers API to build extensions for [C
 
 ### 1. Create an Extension Target
 
-Create a *Generic Extension* target. The extension should target macOS 13+. It can be sandboxed.
+Create a **Generic Extension** target. The extension should target macOS 13+. It can be sandboxed.
 
 In the info.plist of the target, add the following content:
 
@@ -37,6 +37,8 @@ Add this repo as an dependency in Package.swift or via UI in Xcode.
 Create a class that conforms to `CopilotForXcodeExtension`, and mark it with `@main`.
 
 ```swift
+import CopilotForXcodeKit
+
 @main
 class Extension: CopilotForXcodeExtension {
     ...
@@ -52,12 +54,14 @@ Once `host` is set, you can use it to communicate with Copilot for Xcode.
 ```swift
 class Extension: CopilotForXcodeExtension {
     var host: HostServer?
-    ...
+    
     func connectionDidActivate(connectedTo host: HostServer) {
         Task {
             try await host.toast("Connected to Example Extension")
         }
     }
+    
+    ...
 }
 ```
 
