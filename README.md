@@ -111,7 +111,7 @@ To enable the suggestion service within your extension, you must:
 - Provide an instance of this type by returning it from the `suggestionService` property.
 
 ```swift
-final class SuggestionService: SuggestionServiceType {
+class SuggestionService: SuggestionServiceType {
     var configuration: SuggestionServiceConfiguration {
         .init(acceptsRelevantCodeSnippets: true)
     }
@@ -138,10 +138,12 @@ If you need to maintain multiple suggestion services for different workspaces, s
 
 ### 4. Debugging the Extension
 
-To debug the extension, you have two options: running it directly in Xcode or building it. There is no practical difference between the two methods, as Xcode does not automatically attach to the extension's process (may be a bug). Even with manual attachment, you still can not see the logs. Either way, once the extension is built, it will appear in the extension list inside Copilot for Xcode.
+To debug the extension, you have two options: running it directly in Xcode or simply building it. There is no practical difference between the two methods, as Xcode does not automatically attach to the extension's process (may be a bug). Even with manual attachment, you still can not see the logs. Either way, once the extension is built, it will be available in Copilot for Xcode.
 
-Ensure that the debug build has a different bundle identifier to prevent conflicts with the release version.
+To enable the extension, click "Extensions" in Copilot for Xcode.app, and click "Select Extensions" to see all available extensions. Enable the extension you want to debug.
 
-It is recommended to use OSLog. Logs can be reviewed in the Console.app.
+It is recommended to give the debug build a different bundle identifier to prevent conflicts with the release version.
 
-When running the extension from Xcode, you will be prompted to choose a target application. Please select 'Copilot for Xcode.app'.
+It is recommended to use OSLog. Logs can be viewed in the Console.app.
+
+When running the extension from Xcode, you will be prompted to choose a target application. Please select "Copilot for Xcode.app".
