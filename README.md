@@ -1,6 +1,6 @@
 # CopilotForXcodeKit
 
-CopilotforXcodeKit is a Swift package that offers API to build extensions for [Copilot for Xcode](https://github.com/intitni/CopilotForXcode).
+CopilotforXcodeKit is a Swift package that allow you to build extensions for [Copilot for Xcode](https://github.com/intitni/CopilotForXcode).
 
 ## Roadmap
 
@@ -18,7 +18,7 @@ CopilotforXcodeKit is a Swift package that offers API to build extensions for [C
 
 Create a **Generic Extension** target. The extension should target macOS 13+. It can be sandboxed.
 
-In the info.plist of the target, add the following content:
+In the info.plist of the target, set `ExtensionPointIdentifier` to `com.intii.CopilotForXcode.ExtensionService.Extension`:
 
 ```xml
 <key>EXAppExtensionAttributes</key>
@@ -138,12 +138,16 @@ If you need to maintain multiple suggestion services for different workspaces, s
 
 ### 4. Debugging the Extension
 
-To debug the extension, you have two options: running it directly in Xcode or simply building it. There is no practical difference between the two methods, as Xcode does not automatically attach to the extension's process (may be a bug). Even with manual attachment, you still can not see the logs. Either way, once the extension is built, it will be available in Copilot for Xcode.
+To debug the extension, you have two options: running it directly in Xcode or simply building it. There is no practical difference between the two methods, as Xcode does not automatically attach to the extension's process (may be a bug). 
 
-To enable the extension, click "Extensions" in Copilot for Xcode.app, and click "Select Extensions" to see all available extensions. Enable the extension you want to debug.
+Either way, once the extension is built, it will be available in Copilot for Xcode. Then you need to enable the extension:
+
+- Click "Extensions" in Copilot for Xcode.app. 
+- Click "Select Extensions" to see all available extensions. 
+- Enable the extension you want to debug.
+
+After that, the extension process will start to run. You can attach to it from Xcode's Debug menu.
 
 It is recommended to give the debug build a different bundle identifier to prevent conflicts with the release version.
-
-It is recommended to use OSLog. Logs can be viewed in the Console.app.
 
 When running the extension from Xcode, you will be prompted to choose a target application. Please select "Copilot for Xcode.app".
