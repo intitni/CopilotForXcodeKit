@@ -57,6 +57,9 @@ extension ExtensionRequestType {
     }
 }
 
+/// Contains all request types.
+///
+/// Please keep all Codable types backward compatible.
 public enum ExtensionRequests {
     public struct GetExtensionInformation: ExtensionRequestType {
         public typealias ResponseBody = ExtensionInfo
@@ -66,7 +69,7 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyOpenWorkspace: ExtensionRequestType {
-        public let workspaceInfo: WorkspaceInfo
+        public var workspaceInfo: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyOpenWorkspace"
 
@@ -76,7 +79,7 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyCloseWorkspace: ExtensionRequestType {
-        public let workspaceInfo: WorkspaceInfo
+        public var workspaceInfo: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyCloseWorkspace"
 
@@ -86,8 +89,8 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyOpenFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyOpenFile"
 
@@ -98,8 +101,8 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyCloseFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyCloseFile"
 
@@ -110,8 +113,8 @@ public enum ExtensionRequests {
     }
 
     public struct NotifySaveFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifySaveFile"
 
@@ -122,21 +125,24 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyUpdateFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
+        @FallbackDecoding<EmptyString>
+        public var content: String
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyUpdateFile"
 
-        public init(fileURL: URL, workspace: WorkspaceInfo) {
+        public init(fileURL: URL, workspace: WorkspaceInfo, content: String) {
             self.fileURL = fileURL
             self.workspace = workspace
+            self.content = content
         }
     }
 
     public enum SuggestionService {
         public struct GetSuggestions: ExtensionRequestType {
-            public let request: SuggestionRequest
-            public let workspace: WorkspaceInfo
+            public var request: SuggestionRequest
+            public var workspace: WorkspaceInfo
             public struct ResponseBody: Codable {
                 public let suggestions: [CodeSuggestion]
             }
@@ -150,8 +156,8 @@ public enum ExtensionRequests {
         }
 
         public struct NotifyAccepted: ExtensionRequestType {
-            public let suggestion: CodeSuggestion
-            public let workspace: WorkspaceInfo
+            public var suggestion: CodeSuggestion
+            public var workspace: WorkspaceInfo
             public typealias ResponseBody = NoResponse
             public static let endpoint = "SuggestionService/NotifyAccepted"
 
@@ -162,8 +168,8 @@ public enum ExtensionRequests {
         }
 
         public struct NotifyRejected: ExtensionRequestType {
-            public let suggestions: [CodeSuggestion]
-            public let workspace: WorkspaceInfo
+            public var suggestions: [CodeSuggestion]
+            public var workspace: WorkspaceInfo
             public typealias ResponseBody = NoResponse
             public static let endpoint = "SuggestionService/NotifyRejected"
 
@@ -174,7 +180,7 @@ public enum ExtensionRequests {
         }
 
         public struct CancelRequest: ExtensionRequestType {
-            public let workspace: WorkspaceInfo
+            public var workspace: WorkspaceInfo
             public typealias ResponseBody = NoResponse
             public static let endpoint = "SuggestionService/CancelRequest"
 
@@ -321,8 +327,11 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
             reply(nil, error)
             return
         }
-        
-        Logger.error("Extension didn't handle request \(endpoint). Please update the package or report to the developer.")
+
+        Logger.error("""
+        Extension didn't handle request \(endpoint). \
+        Please update the package or report to the developer.
+        """)
         reply(nil, XPCRequestNotHandledError())
     }
 }
