@@ -93,6 +93,11 @@ public struct CursorRange: Codable, Hashable, Sendable, Equatable, CustomStringC
     public var isOneLine: Bool {
         return start.line == end.line
     }
+    
+    /// The number of lines in the range.
+    public var lineCount: Int {
+        return end.line - start.line + 1
+    }
 
     public static func == (lhs: CursorRange, rhs: CursorRange) -> Bool {
         return lhs.start == rhs.start && lhs.end == rhs.end
