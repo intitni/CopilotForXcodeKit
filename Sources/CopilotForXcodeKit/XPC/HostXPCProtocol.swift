@@ -29,6 +29,9 @@ public enum ToastType: Int, Codable {
 @_spi(CopilotForXcodeSPI)
 public protocol HostRequestType: XPCRequestType {}
 
+/// Contains all request types.
+///
+/// Please keep all Codable types backward compatible.
 @_spi(CopilotForXcodeSPI)
 public enum HostRequests {
     public struct Ping: HostRequestType {
@@ -72,10 +75,12 @@ public final class HostServer {
         }
     }
 
+    /// Ping the host.
     public func ping() async throws {
         _ = try await send(HostRequests.Ping())
     }
 
+    /// Send a toast that displays next to the Copilot for Xcode circular widget.
     public func toast(
         _ message: String,
         toastType: ToastType = .info

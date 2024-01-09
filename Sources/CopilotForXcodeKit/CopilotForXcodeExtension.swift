@@ -19,14 +19,14 @@ import SwiftUI
 /// ``host`` is then available for communication with the host app.
 ///
 /// For scenes, each has a separate connection to the host app. While you can still use ``host``,
-/// ``sceneModel.host`` is recommended for easier communication within scenes.
+/// ``CopilotForXcodeSceneModel/host`` is recommended for easier communication within scenes.
 ///
 /// ## Observing the Workspace
 ///
 /// Use `workspace`-prefixed methods to monitor workspace changes.
 ///
 /// Note that workspaces may be open prior to extension activation.
-/// In this case, use ``HostServer.getExistedWorkspaces`` to fetch all ``WorkspaceInfo``.
+/// In this case, use ``HostServer/getExistedWorkspaces`` to fetch all ``WorkspaceInfo``.
 ///
 /// ## Providing UI
 ///
