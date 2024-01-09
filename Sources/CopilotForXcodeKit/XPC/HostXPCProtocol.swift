@@ -1,3 +1,4 @@
+import CopilotForXcodeModel
 import ExtensionFoundation
 import Foundation
 import XPCConcurrency

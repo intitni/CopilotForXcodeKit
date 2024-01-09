@@ -1,3 +1,4 @@
+import CopilotForXcodeModel
 import Foundation
 
 /// A configuration for the host to decide it's behavior when using the service.

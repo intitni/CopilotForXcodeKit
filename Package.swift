@@ -11,17 +11,31 @@ let package = Package(
     products: [
         .library(
             name: "CopilotForXcodeKit",
-            targets: ["CopilotForXcodeKit"]
+            targets: ["CopilotForXcodeKit", "CopilotForXcodeModel"]
+        ),
+        .library(
+            name: "CopilotForXcodeModel",
+            targets: ["CopilotForXcodeModel"]
         ),
         .library(
             name: "XPCConcurrency",
             targets: ["XPCConcurrency"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/GottaGetSwifty/CodableWrappers.git", from: "2.0.7"),
+    ],
     targets: [
         .target(
             name: "CopilotForXcodeKit",
-            dependencies: ["XPCConcurrency"]
+            dependencies: [
+                "XPCConcurrency",
+                "CopilotForXcodeModel",
+                .product(name: "CodableWrappers", package: "CodableWrappers"),
+            ]
+        ),
+        .target(
+            name: "CopilotForXcodeModel"
         ),
         .target(
             name: "XPCConcurrency"
@@ -29,6 +43,10 @@ let package = Package(
         .testTarget(
             name: "CopilotForXcodeKitTests",
             dependencies: ["CopilotForXcodeKit"]
+        ),
+        .testTarget(
+            name: "CopilotForXcodeModelTests",
+            dependencies: ["CopilotForXcodeModel"]
         ),
     ]
 )

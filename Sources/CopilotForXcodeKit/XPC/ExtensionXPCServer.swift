@@ -1,7 +1,9 @@
+import CodableWrappers
+import CopilotForXcodeModel
 import ExtensionFoundation
 import Foundation
-import XPCConcurrency
 import OSLog
+import XPCConcurrency
 
 /// The information of the extension. The struct should be implemented to be backward compatible.
 public struct ExtensionInfo: Codable {
