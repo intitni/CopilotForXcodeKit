@@ -45,24 +45,26 @@ public enum HostRequests {
         public static let endpoint = "toast"
     }
 
-    public struct RunCommand: HostRequestType {
+    public struct TriggerExtensionCommand: HostRequestType {
         public var extensionName: String
         public var command: String
+        public var activateXcode: Bool
         public typealias ResponseBody = NoResponse
-        public static let endpoint = "RunCommand"
+        public static let endpoint = "TriggerExtensionCommand"
     }
 
-    public struct ClickMenuItem: HostRequestType {
+    public struct TriggerMenuItem: HostRequestType {
         public var path: [String]
+        public var activateXcode: Bool
         public typealias ResponseBody = NoResponse
-        public static let endpoint = "ClickMenuItem"
+        public static let endpoint = "TriggerMenuItem"
     }
 
     public struct GetExistedWorkspaces: HostRequestType {
         public typealias ResponseBody = [WorkspaceInfo]
         public static let endpoint = "getExistedWorkspaces"
     }
-    
+
     public struct GetActiveEditor: HostRequestType {
         public typealias ResponseBody = Editor?
         public static let endpoint = "GetActiveEditor"
@@ -112,20 +114,30 @@ public final class HostServer {
 
     /// Run a command from a source editor extension.
     /// - Parameters:
-    ///   - extensionName: The name of the extension. It should be in the editor menu. 
+    ///   - extensionName: The name of the extension. It should be in the editor menu.
     ///                    e.g. "Copilot".
     ///   - command: The command to run. It should be in the extension menu. e.g. "Get Suggestions".
-    public func runCommand(_ extensionName: String, _ command: String) async throws {
-        _ = try await send(HostRequests.RunCommand(extensionName: extensionName, command: command))
+    ///   - activateXcode: Whether to activate Xcode before running the command.
+    public func triggerExtensionCommand(
+        extensionName: String,
+        command: String,
+        activateXcode: Bool
+    ) async throws {
+        _ = try await send(HostRequests.TriggerExtensionCommand(
+            extensionName: extensionName,
+            command: command,
+            activateXcode: activateXcode
+        ))
     }
 
     /// Click a menu item from a source editor extension.
     /// - Parameters:
     ///  - path: The path of the menu item. e.g. ["Product", "Run"].
-    public func clickMenuItem(_ path: [String]) async throws {
-        _ = try await send(HostRequests.ClickMenuItem(path: path))
+    ///  - activateXcode: Whether to activate Xcode before running the command.
+    public func triggerMenuItem(path: [String], activateXcode: Bool) async throws {
+        _ = try await send(HostRequests.TriggerMenuItem(path: path, activateXcode: activateXcode))
     }
-    
+
     /// Get the active editor.
     public func getActiveEditor() async throws -> Editor? {
         try await send(HostRequests.GetActiveEditor())
