@@ -1,4 +1,3 @@
-import CopilotForXcodeModel
 import ExtensionFoundation
 import ExtensionKit
 import Foundation

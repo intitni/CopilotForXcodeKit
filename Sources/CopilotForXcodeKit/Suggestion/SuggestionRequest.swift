@@ -1,4 +1,3 @@
-import CopilotForXcodeModel
 import Foundation
 
 public struct RelevantCodeSnippet: Codable {

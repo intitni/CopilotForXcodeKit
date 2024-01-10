@@ -1,5 +1,4 @@
 import CodableWrappers
-import CopilotForXcodeModel
 import ExtensionFoundation
 import Foundation
 import OSLog

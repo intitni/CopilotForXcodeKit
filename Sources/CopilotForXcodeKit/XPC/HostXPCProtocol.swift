@@ -1,4 +1,3 @@
-import CopilotForXcodeModel
 import ExtensionFoundation
 import Foundation
 import XPCConcurrency
@@ -65,7 +64,7 @@ public enum HostRequests {
     }
     
     public struct GetActiveEditor: HostRequestType {
-        public typealias ResponseBody = Editor
+        public typealias ResponseBody = Editor?
         public static let endpoint = "GetActiveEditor"
     }
 }
@@ -128,7 +127,7 @@ public final class HostServer {
     }
     
     /// Get the active editor.
-    public func getActiveEditor() async throws -> Editor {
+    public func getActiveEditor() async throws -> Editor? {
         try await send(HostRequests.GetActiveEditor())
     }
 }

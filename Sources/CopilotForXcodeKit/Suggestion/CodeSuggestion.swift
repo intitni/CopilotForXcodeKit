@@ -1,4 +1,3 @@
-import CopilotForXcodeModel
 import Foundation
 
 /// A suggestion for code completion.

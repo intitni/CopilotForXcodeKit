@@ -11,11 +11,7 @@ let package = Package(
     products: [
         .library(
             name: "CopilotForXcodeKit",
-            targets: ["CopilotForXcodeKit", "CopilotForXcodeModel"]
-        ),
-        .library(
-            name: "CopilotForXcodeModel",
-            targets: ["CopilotForXcodeModel"]
+            targets: ["CopilotForXcodeKit"]
         ),
         .library(
             name: "XPCConcurrency",
@@ -30,12 +26,8 @@ let package = Package(
             name: "CopilotForXcodeKit",
             dependencies: [
                 "XPCConcurrency",
-                "CopilotForXcodeModel",
                 .product(name: "CodableWrappers", package: "CodableWrappers"),
             ]
-        ),
-        .target(
-            name: "CopilotForXcodeModel"
         ),
         .target(
             name: "XPCConcurrency"
@@ -43,10 +35,6 @@ let package = Package(
         .testTarget(
             name: "CopilotForXcodeKitTests",
             dependencies: ["CopilotForXcodeKit"]
-        ),
-        .testTarget(
-            name: "CopilotForXcodeModelTests",
-            dependencies: ["CopilotForXcodeModel"]
         ),
     ]
 )
