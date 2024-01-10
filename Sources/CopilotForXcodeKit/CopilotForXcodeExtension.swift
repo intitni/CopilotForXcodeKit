@@ -8,7 +8,7 @@ import SwiftUI
 /// Conform the entry point of your extension to this protocol.
 ///
 /// ```swift
-/// @main 
+/// @main
 /// class MyExtension: CopilotForXcodeExtension {}
 /// ```
 ///
@@ -92,22 +92,26 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     func workspaceDidClose(_ workspace: WorkspaceInfo)
 
     /// Called when a document is saved.
-    func workspace(_ workspace: WorkspaceInfo, didSaveFileAt fileURL: URL)
+    func workspace(_ workspace: WorkspaceInfo, didSaveDocumentAt documentURL: URL)
 
     /// Called when a document is closed.
     ///
     /// - note: Copilot for Xcode doesn't know that a document is closed. It use
     /// some mechanism to detect if the document is closed which is inaccurate and could be delayed.
-    func workspace(_ workspace: WorkspaceInfo, didCloseFileAt fileURL: URL)
+    func workspace(_ workspace: WorkspaceInfo, didCloseDocumentAt documentURL: URL)
 
     /// Called when a document is opened.
     ///
     /// - note: Copilot for Xcode doesn't know that a document is opened. It use
     /// some mechanism to detect if the document is opened which is inaccurate and could be delayed.
-    func workspace(_ workspace: WorkspaceInfo, didOpenFileAt fileURL: URL)
+    func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL)
 
     /// Called when a document is changed.
-    func workspace(_ workspace: WorkspaceInfo, didUpdateFileAt fileURL: URL, content: String)
+    func workspace(
+        _ workspace: WorkspaceInfo,
+        didUpdateDocumentAt documentURL: URL,
+        content: String
+    )
 }
 
 // MARK: - Default Implementation
@@ -136,13 +140,13 @@ public extension CopilotForXcodeExtension {
 
     func workspaceDidClose(_: WorkspaceInfo) {}
 
-    func workspace(_: WorkspaceInfo, didSaveFileAt _: URL) {}
+    func workspace(_: WorkspaceInfo, didSaveDocumentAt _: URL) {}
 
-    func workspace(_: WorkspaceInfo, didCloseFileAt _: URL) {}
+    func workspace(_: WorkspaceInfo, didCloseDocumentAt _: URL) {}
 
-    func workspace(_: WorkspaceInfo, didOpenFileAt _: URL) {}
+    func workspace(_: WorkspaceInfo, didOpenDocumentAt _: URL) {}
 
-    func workspace(_: WorkspaceInfo, didUpdateFileAt _: URL) {}
+    func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL, content: String) {}
 }
 
 // MARK: - Extension Configuration
@@ -165,7 +169,7 @@ public extension CopilotForXcodeExtensionConfiguration {
     /// Accept the XPC connection from the host.
     func accept(connection: NSXPCConnection) -> Bool {
         Logger.info("Extension scene did receive connection.")
-        
+
         guard theExtension.shouldAccept(connection) else { return false }
         connection.exportedInterface = NSXPCInterface(with: ExtensionXPCProtocol.self)
         connection.exportedObject = server
