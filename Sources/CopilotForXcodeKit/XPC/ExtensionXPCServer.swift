@@ -58,7 +58,7 @@ extension ExtensionRequestType {
 
 /// Contains all request types.
 ///
-/// Please keep all Codable types backward compatible.
+/// Please keep all ``Codable`` types backward compatible.
 public enum ExtensionRequests {
     public struct GetExtensionInformation: ExtensionRequestType {
         public typealias ResponseBody = ExtensionInfo
@@ -79,6 +79,16 @@ public enum ExtensionRequests {
         public static let endpoint = "NotifyDeactivateXcode"
 
         public init() {}
+    }
+
+    public struct NotifySwitchEditor: ExtensionRequestType {
+        public let editor: Editor
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "NotifySwitchEditor"
+
+        public init(editor: Editor) {
+            self.editor = editor
+        }
     }
 
     public struct NotifyOpenWorkspace: ExtensionRequestType {
@@ -251,6 +261,15 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 return .none
             }
 
+            try ExtensionRequests.NotifySwitchEditor.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] request in
+                theExtension.xcodeDidSwitchEditor(request.editor)
+                return .none
+            }
+
             try ExtensionRequests.NotifyOpenWorkspace.handle(
                 endpoint: endpoint,
                 requestBody: requestBody,
@@ -274,7 +293,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didOpenFileAt: request.fileURL)
+                theExtension.workspace(request.workspace, didOpenDocumentAt: request.fileURL)
                 return .none
             }
 
@@ -283,7 +302,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didCloseFileAt: request.fileURL)
+                theExtension.workspace(request.workspace, didCloseDocumentAt: request.fileURL)
                 return .none
             }
 
@@ -292,7 +311,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didSaveFileAt: request.fileURL)
+                theExtension.workspace(request.workspace, didSaveDocumentAt: request.fileURL)
                 return .none
             }
 
@@ -303,7 +322,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
             ) { [theExtension] request in
                 theExtension.workspace(
                     request.workspace,
-                    didUpdateFileAt: request.fileURL,
+                    didUpdateDocumentAt: request.fileURL,
                     content: request.content
                 )
                 return .none
