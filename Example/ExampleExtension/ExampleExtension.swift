@@ -29,15 +29,15 @@ class Extension: CopilotForXcodeExtension {
     /// Check the ``CopilotForXcodeExtension`` protocol for details.
     //
     
-    func workspace(_ workspace: WorkspaceInfo, didOpenFileAt fileURL: URL) {
+    func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL) {
         Task {
-            try await host?.toast("Opened \(fileURL.lastPathComponent)")
+            try await host?.toast("Opened \(documentURL.lastPathComponent)")
         }
     }
 
-    func workspace(_ workspace: WorkspaceInfo, didCloseFileAt fileURL: URL) {
+    func workspace(_ workspace: WorkspaceInfo, didCloseDocumentAt documentURL: URL) {
         Task {
-            try await host?.toast("Closed \(fileURL.lastPathComponent)")
+            try await host?.toast("Closed \(documentURL.lastPathComponent)")
         }
     }
 }
