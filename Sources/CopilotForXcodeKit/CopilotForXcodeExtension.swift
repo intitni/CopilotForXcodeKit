@@ -98,7 +98,7 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     func workspace(_ workspace: WorkspaceInfo, didOpenFileAt fileURL: URL)
 
     /// Called when a document is changed.
-    func workspace(_ workspace: WorkspaceInfo, didUpdateFileAt fileURL: URL)
+    func workspace(_ workspace: WorkspaceInfo, didUpdateFileAt fileURL: URL, content: String)
 }
 
 // MARK: - Default Implementation
