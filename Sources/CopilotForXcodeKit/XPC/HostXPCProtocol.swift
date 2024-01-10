@@ -69,6 +69,11 @@ public enum HostRequests {
         public typealias ResponseBody = Editor?
         public static let endpoint = "GetActiveEditor"
     }
+    
+    public struct GetXcodeInformation: HostRequestType {
+        public typealias ResponseBody = XcodeInfo
+        public static let endpoint = "GetXcodeInformation"
+    }
 }
 
 /// The host server, aka the ExtensionService of Copilot for Xcode.app.
@@ -117,11 +122,15 @@ public final class HostServer {
     ///   - extensionName: The name of the extension. It should be in the editor menu.
     ///                    e.g. "Copilot".
     ///   - command: The command to run. It should be in the extension menu. e.g. "Get Suggestions".
-    ///   - activateXcode: Whether to activate Xcode before running the command.
+    ///   - activateXcode: Whether to force activate Xcode before running the command.
+    ///
+    /// - Note: A command won't run when Xcode is not active. If you want to make sure that the
+    ///         command will run, you can set `activateXcode` to `true`. But please note that it
+    ///         will bring Xcode to the front.
     public func triggerExtensionCommand(
         extensionName: String,
         command: String,
-        activateXcode: Bool
+        activateXcode: Bool = false
     ) async throws {
         _ = try await send(HostRequests.TriggerExtensionCommand(
             extensionName: extensionName,
@@ -132,15 +141,27 @@ public final class HostServer {
 
     /// Click a menu item from a source editor extension.
     /// - Parameters:
-    ///  - path: The path of the menu item. e.g. ["Product", "Run"].
-    ///  - activateXcode: Whether to activate Xcode before running the command.
-    public func triggerMenuItem(path: [String], activateXcode: Bool) async throws {
+    ///   - path: The path of the menu item. e.g. ["Product", "Run"].
+    ///   - activateXcode: Whether to force activate Xcode before triggering the menu item.
+    ///
+    /// - Note: A menu item won't trigger when Xcode is not active. If you want to make sure
+    ///         that the command will run, you can set `activateXcode` to `true`. But please note
+    ///         that it will bring Xcode to the front.
+    public func triggerMenuItem(
+        path: [String],
+        activateXcode: Bool = false
+    ) async throws {
         _ = try await send(HostRequests.TriggerMenuItem(path: path, activateXcode: activateXcode))
     }
 
     /// Get the active editor.
     public func getActiveEditor() async throws -> Editor? {
         try await send(HostRequests.GetActiveEditor())
+    }
+    
+    /// Get the xcode information.
+    public func getXcodeInformation() async throws -> XcodeInfo {
+        try await send(HostRequests.GetXcodeInformation())
     }
 }
 

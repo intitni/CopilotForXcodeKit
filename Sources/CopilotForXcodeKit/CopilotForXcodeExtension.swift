@@ -73,6 +73,12 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     /// Called when connection is activated. You don't have to set the `host` property here.
     func connectionDidActivate(connectedTo host: HostServer)
 
+    /// Called when connection is invalidated.
+    func xcodeDidBecomeActive()
+    
+    /// Called when Xcode becomes inactive.
+    func xcodeDidBecomeInactive()
+    
     /// Called when a workspace is opened.
     ///
     /// A workspace may have already been opened when the extension is activated.
@@ -116,6 +122,10 @@ public extension CopilotForXcodeExtension {
     func shouldAccept(_: NSXPCConnection) -> Bool { true }
 
     func connectionDidActivate(connectedTo host: HostServer) {}
+    
+    func xcodeDidBecomeActive() {}
+    
+    func xcodeDidBecomeInactive() {}
 
     func workspaceDidOpen(_: WorkspaceInfo) {}
 

@@ -67,6 +67,20 @@ public enum ExtensionRequests {
         public init() {}
     }
 
+    public struct NotifyActivateXcode: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "NotifyActivateXcode"
+
+        public init() {}
+    }
+
+    public struct NotifyDeactivateXcode: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "NotifyDeactivateXcode"
+
+        public init() {}
+    }
+
     public struct NotifyOpenWorkspace: ExtensionRequestType {
         public var workspaceInfo: WorkspaceInfo
         public typealias ResponseBody = NoResponse
@@ -217,6 +231,24 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                     hasConfigurationScene: theExtension.sceneConfiguration.hasConfigurationScene,
                     chatPanelSceneInfo: theExtension.sceneConfiguration.chatPanelSceneInfo
                 )
+            }
+
+            try ExtensionRequests.NotifyActivateXcode.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] _ in
+                theExtension.xcodeDidBecomeActive()
+                return .none
+            }
+
+            try ExtensionRequests.NotifyDeactivateXcode.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] _ in
+                theExtension.xcodeDidBecomeInactive()
+                return .none
             }
 
             try ExtensionRequests.NotifyOpenWorkspace.handle(
