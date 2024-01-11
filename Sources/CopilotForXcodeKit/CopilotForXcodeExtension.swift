@@ -67,6 +67,8 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     /// Define scenes of the extension. You can use it to provide UI for the extension.
     var sceneConfiguration: TheSceneConfiguration { get }
 
+    // MARK: Optional Methods
+
     /// Check if the connection should be accepted.
     func shouldAccept(_ connection: NSXPCConnection) -> Bool
 
@@ -80,7 +82,7 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     func xcodeDidBecomeInactive()
 
     /// Called when Xcode switches editor.
-    func xcodeDidSwitchEditor(_ editor: Editor)
+    func xcodeDidSwitchEditor()
 
     /// Called when a workspace is opened.
     ///
@@ -134,7 +136,7 @@ public extension CopilotForXcodeExtension {
 
     func xcodeDidBecomeInactive() {}
 
-    func xcodeDidSwitchEditor(_: Editor) {}
+    func xcodeDidSwitchEditor() {}
 
     func workspaceDidOpen(_: WorkspaceInfo) {}
 

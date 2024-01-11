@@ -82,13 +82,10 @@ public enum ExtensionRequests {
     }
 
     public struct NotifySwitchEditor: ExtensionRequestType {
-        public let editor: Editor
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifySwitchEditor"
 
-        public init(editor: Editor) {
-            self.editor = editor
-        }
+        public init() {}
     }
 
     public struct NotifyOpenWorkspace: ExtensionRequestType {
@@ -265,8 +262,8 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 endpoint: endpoint,
                 requestBody: requestBody,
                 reply: reply
-            ) { [theExtension] request in
-                theExtension.xcodeDidSwitchEditor(request.editor)
+            ) { [theExtension] _ in
+                theExtension.xcodeDidSwitchEditor()
                 return .none
             }
 
