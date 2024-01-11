@@ -92,7 +92,7 @@ struct ChatPanelView: View {
                 /// ``host`` is probably still nil here!
                 ///
                 /// If you need to run something upon connection, observe the changes of the
-                /// published property ``CopilotForXcodeSceneModel/isClosed``.
+                /// published property ``CopilotForXcodeSceneModel/isConnected``.
                 
                 try? await model.host?.toast("Chat Panel Appeared")
             }
