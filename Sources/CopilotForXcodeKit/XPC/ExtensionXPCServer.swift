@@ -1,7 +1,8 @@
+import CodableWrappers
 import ExtensionFoundation
 import Foundation
-import XPCConcurrency
 import OSLog
+import XPCConcurrency
 
 /// The information of the extension. The struct should be implemented to be backward compatible.
 public struct ExtensionInfo: Codable {
@@ -55,6 +56,9 @@ extension ExtensionRequestType {
     }
 }
 
+/// Contains all request types.
+///
+/// Please keep all ``Codable`` types backward compatible.
 public enum ExtensionRequests {
     public struct GetExtensionInformation: ExtensionRequestType {
         public typealias ResponseBody = ExtensionInfo
@@ -63,8 +67,29 @@ public enum ExtensionRequests {
         public init() {}
     }
 
+    public struct NotifyActivateXcode: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "NotifyActivateXcode"
+
+        public init() {}
+    }
+
+    public struct NotifyDeactivateXcode: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "NotifyDeactivateXcode"
+
+        public init() {}
+    }
+
+    public struct NotifySwitchEditor: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "NotifySwitchEditor"
+
+        public init() {}
+    }
+
     public struct NotifyOpenWorkspace: ExtensionRequestType {
-        public let workspaceInfo: WorkspaceInfo
+        public var workspaceInfo: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyOpenWorkspace"
 
@@ -74,7 +99,7 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyCloseWorkspace: ExtensionRequestType {
-        public let workspaceInfo: WorkspaceInfo
+        public var workspaceInfo: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyCloseWorkspace"
 
@@ -84,8 +109,8 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyOpenFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyOpenFile"
 
@@ -96,8 +121,8 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyCloseFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyCloseFile"
 
@@ -108,8 +133,8 @@ public enum ExtensionRequests {
     }
 
     public struct NotifySaveFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifySaveFile"
 
@@ -120,21 +145,24 @@ public enum ExtensionRequests {
     }
 
     public struct NotifyUpdateFile: ExtensionRequestType {
-        public let fileURL: URL
-        public let workspace: WorkspaceInfo
+        public var fileURL: URL
+        public var workspace: WorkspaceInfo
+        @FallbackDecoding<EmptyString>
+        public var content: String
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyUpdateFile"
 
-        public init(fileURL: URL, workspace: WorkspaceInfo) {
+        public init(fileURL: URL, workspace: WorkspaceInfo, content: String) {
             self.fileURL = fileURL
             self.workspace = workspace
+            self.content = content
         }
     }
 
     public enum SuggestionService {
         public struct GetSuggestions: ExtensionRequestType {
-            public let request: SuggestionRequest
-            public let workspace: WorkspaceInfo
+            public var request: SuggestionRequest
+            public var workspace: WorkspaceInfo
             public struct ResponseBody: Codable {
                 public let suggestions: [CodeSuggestion]
             }
@@ -148,8 +176,8 @@ public enum ExtensionRequests {
         }
 
         public struct NotifyAccepted: ExtensionRequestType {
-            public let suggestion: CodeSuggestion
-            public let workspace: WorkspaceInfo
+            public var suggestion: CodeSuggestion
+            public var workspace: WorkspaceInfo
             public typealias ResponseBody = NoResponse
             public static let endpoint = "SuggestionService/NotifyAccepted"
 
@@ -160,8 +188,8 @@ public enum ExtensionRequests {
         }
 
         public struct NotifyRejected: ExtensionRequestType {
-            public let suggestions: [CodeSuggestion]
-            public let workspace: WorkspaceInfo
+            public var suggestions: [CodeSuggestion]
+            public var workspace: WorkspaceInfo
             public typealias ResponseBody = NoResponse
             public static let endpoint = "SuggestionService/NotifyRejected"
 
@@ -172,7 +200,7 @@ public enum ExtensionRequests {
         }
 
         public struct CancelRequest: ExtensionRequestType {
-            public let workspace: WorkspaceInfo
+            public var workspace: WorkspaceInfo
             public typealias ResponseBody = NoResponse
             public static let endpoint = "SuggestionService/CancelRequest"
 
@@ -212,6 +240,33 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 )
             }
 
+            try ExtensionRequests.NotifyActivateXcode.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] _ in
+                theExtension.xcodeDidBecomeActive()
+                return .none
+            }
+
+            try ExtensionRequests.NotifyDeactivateXcode.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] _ in
+                theExtension.xcodeDidBecomeInactive()
+                return .none
+            }
+
+            try ExtensionRequests.NotifySwitchEditor.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] _ in
+                theExtension.xcodeDidSwitchEditor()
+                return .none
+            }
+
             try ExtensionRequests.NotifyOpenWorkspace.handle(
                 endpoint: endpoint,
                 requestBody: requestBody,
@@ -235,7 +290,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didOpenFileAt: request.fileURL)
+                theExtension.workspace(request.workspace, didOpenDocumentAt: request.fileURL)
                 return .none
             }
 
@@ -244,7 +299,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didCloseFileAt: request.fileURL)
+                theExtension.workspace(request.workspace, didCloseDocumentAt: request.fileURL)
                 return .none
             }
 
@@ -253,7 +308,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didSaveFileAt: request.fileURL)
+                theExtension.workspace(request.workspace, didSaveDocumentAt: request.fileURL)
                 return .none
             }
 
@@ -262,7 +317,11 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didUpdateFileAt: request.fileURL)
+                theExtension.workspace(
+                    request.workspace,
+                    didUpdateDocumentAt: request.fileURL,
+                    content: request.content
+                )
                 return .none
             }
 
@@ -319,8 +378,11 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
             reply(nil, error)
             return
         }
-        
-        Logger.error("Extension didn't handle request \(endpoint). Please update the package or report to the developer.")
+
+        Logger.error("""
+        Extension didn't handle request \(endpoint). \
+        Please update the package or report to the developer.
+        """)
         reply(nil, XPCRequestNotHandledError())
     }
 }
