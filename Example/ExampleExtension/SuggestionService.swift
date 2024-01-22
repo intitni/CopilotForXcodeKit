@@ -5,7 +5,7 @@ import Foundation
 /// maintain multiple services for each workspace, you will have to manage their life cycle by
 /// yourself.
 ///
-/// You can use ``HostServer.getExistedWorkspaces()`` to get all existed workspaces on start, and
+/// You can use ``HostServer/getExistedWorkspaces()`` to get all existed workspaces on start, and
 /// use observers in the ``Extension`` type to determine if you need to create or destroy a service.
 //
 
@@ -20,7 +20,7 @@ final class SuggestionService: SuggestionServiceType {
 
     func getSuggestions(
         _ request: SuggestionRequest,
-        
+
         /// If you are maintaining multiple services for each workspace, use this parameter
         /// to identify which workspace the request is for.
         ///
@@ -59,3 +59,4 @@ final class SuggestionService: SuggestionServiceType {
         try? await ext?.host?.toast("Canceled!")
     }
 }
+

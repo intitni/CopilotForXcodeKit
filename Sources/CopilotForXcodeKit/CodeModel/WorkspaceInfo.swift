@@ -8,13 +8,18 @@ public struct WorkspaceInfo: Codable, Identifiable {
     /// An id.
     public var id: String { workspaceURL.path }
     /// URL to a workspace or project file.
-    public let workspaceURL: URL
+    public var workspaceURL: URL
     /// URL of the project root path.
-    public let projectURL: URL
+    public var projectURL: URL
 
     public init(workspaceURL: URL, projectURL: URL) {
         self.workspaceURL = workspaceURL
         self.projectURL = projectURL
+    }
+
+    init() {
+        workspaceURL = .init(fileURLWithPath: "/")
+        projectURL = .init(fileURLWithPath: "/")
     }
 }
 

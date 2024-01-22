@@ -18,10 +18,16 @@ let package = Package(
             targets: ["XPCConcurrency"]
         ),
     ],
+    dependencies: [
+        .package(url: "https://github.com/GottaGetSwifty/CodableWrappers.git", from: "2.0.7"),
+    ],
     targets: [
         .target(
             name: "CopilotForXcodeKit",
-            dependencies: ["XPCConcurrency"]
+            dependencies: [
+                "XPCConcurrency",
+                .product(name: "CodableWrappers", package: "CodableWrappers"),
+            ]
         ),
         .target(
             name: "XPCConcurrency"

@@ -28,6 +28,9 @@ public enum ToastType: Int, Codable {
 @_spi(CopilotForXcodeSPI)
 public protocol HostRequestType: XPCRequestType {}
 
+/// Contains all request types.
+///
+/// Please keep all Codable types backward compatible.
 @_spi(CopilotForXcodeSPI)
 public enum HostRequests {
     public struct Ping: HostRequestType {
@@ -42,9 +45,34 @@ public enum HostRequests {
         public static let endpoint = "toast"
     }
 
+    public struct TriggerExtensionCommand: HostRequestType {
+        public var extensionName: String
+        public var command: String
+        public var activateXcode: Bool
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "TriggerExtensionCommand"
+    }
+
+    public struct TriggerMenuItem: HostRequestType {
+        public var path: [String]
+        public var activateXcode: Bool
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "TriggerMenuItem"
+    }
+
     public struct GetExistedWorkspaces: HostRequestType {
         public typealias ResponseBody = [WorkspaceInfo]
         public static let endpoint = "getExistedWorkspaces"
+    }
+
+    public struct GetActiveEditor: HostRequestType {
+        public typealias ResponseBody = Editor?
+        public static let endpoint = "GetActiveEditor"
+    }
+    
+    public struct GetXcodeInformation: HostRequestType {
+        public typealias ResponseBody = XcodeInfo
+        public static let endpoint = "GetXcodeInformation"
     }
 }
 
@@ -71,10 +99,12 @@ public final class HostServer {
         }
     }
 
+    /// Ping the host.
     public func ping() async throws {
         _ = try await send(HostRequests.Ping())
     }
 
+    /// Send a toast that displays next to the Copilot for Xcode circular widget.
     public func toast(
         _ message: String,
         toastType: ToastType = .info
@@ -82,8 +112,56 @@ public final class HostServer {
         _ = try await send(HostRequests.Toast(message: message, toastType: toastType))
     }
 
+    /// Get the existed workspaces.
     public func getExistedWorkspaces() async throws -> [WorkspaceInfo] {
         try await send(HostRequests.GetExistedWorkspaces())
+    }
+
+    /// Run a command from a source editor extension.
+    /// - Parameters:
+    ///   - extensionName: The name of the extension. It should be in the editor menu.
+    ///                    e.g. "Copilot".
+    ///   - command: The command to run. It should be in the extension menu. e.g. "Get Suggestions".
+    ///   - activateXcode: Whether to force activate Xcode before running the command.
+    ///
+    /// - Note: A command won't run when Xcode is not active. If you want to make sure that the
+    ///         command will run, you can set `activateXcode` to `true`. But please note that it
+    ///         will bring Xcode to the front.
+    public func triggerExtensionCommand(
+        extensionName: String,
+        command: String,
+        activateXcode: Bool = false
+    ) async throws {
+        _ = try await send(HostRequests.TriggerExtensionCommand(
+            extensionName: extensionName,
+            command: command,
+            activateXcode: activateXcode
+        ))
+    }
+
+    /// Click a menu item from a source editor extension.
+    /// - Parameters:
+    ///   - path: The path of the menu item. e.g. ["Product", "Run"].
+    ///   - activateXcode: Whether to force activate Xcode before triggering the menu item.
+    ///
+    /// - Note: A menu item won't trigger when Xcode is not active. If you want to make sure
+    ///         that the command will run, you can set `activateXcode` to `true`. But please note
+    ///         that it will bring Xcode to the front.
+    public func triggerMenuItem(
+        path: [String],
+        activateXcode: Bool = false
+    ) async throws {
+        _ = try await send(HostRequests.TriggerMenuItem(path: path, activateXcode: activateXcode))
+    }
+
+    /// Get the active editor.
+    public func getActiveEditor() async throws -> Editor? {
+        try await send(HostRequests.GetActiveEditor())
+    }
+    
+    /// Get the xcode information.
+    public func getXcodeInformation() async throws -> XcodeInfo {
+        try await send(HostRequests.GetXcodeInformation())
     }
 }
 
