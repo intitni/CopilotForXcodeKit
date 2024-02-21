@@ -39,7 +39,6 @@ public struct SuggestionRequest: Codable {
         relativePath: String,
         language: CodeLanguage,
         content: String,
-        lines: [String],
         cursorPosition: CursorPosition,
         tabSize: Int,
         indentSize: Int,
@@ -50,7 +49,6 @@ public struct SuggestionRequest: Codable {
         self.relativePath = relativePath
         self.language = language
         self.content = content
-        self.lines = lines
         self.cursorPosition = cursorPosition
         self.tabSize = tabSize
         self.indentSize = indentSize
