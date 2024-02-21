@@ -21,8 +21,6 @@ public struct SuggestionRequest: Codable {
     public var language: CodeLanguage?
     /// The content. Please not that the content may not be exactly the same as the file content.
     public var content: String
-    /// The content split in lines.
-    public var lines: [String]?
     /// The cursor position in the content.
     public var cursorPosition: CursorPosition
     /// Tab size.
