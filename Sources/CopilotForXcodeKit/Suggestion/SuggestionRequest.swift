@@ -1,3 +1,4 @@
+import CodableWrappers
 import Foundation
 
 public struct RelevantCodeSnippet: Codable {
@@ -14,8 +15,14 @@ public struct RelevantCodeSnippet: Codable {
 public struct SuggestionRequest: Codable {
     /// The file URL of the file for which suggestions should be generated.
     public var fileURL: URL
+    /// The relativePath.
+    public var relativePath: String?
+    /// The language of the file.
+    public var language: CodeLanguage?
     /// The content. Please not that the content may not be exactly the same as the file content.
     public var content: String
+    /// The content split in lines.
+    public var lines: [String]?
     /// The cursor position in the content.
     public var cursorPosition: CursorPosition
     /// Tab size.
@@ -31,7 +38,10 @@ public struct SuggestionRequest: Codable {
 
     public init(
         fileURL: URL,
+        relativePath: String,
+        language: CodeLanguage,
         content: String,
+        lines: [String],
         cursorPosition: CursorPosition,
         tabSize: Int,
         indentSize: Int,
@@ -39,7 +49,10 @@ public struct SuggestionRequest: Codable {
         relevantCodeSnippets: [RelevantCodeSnippet]
     ) {
         self.fileURL = fileURL
+        self.relativePath = relativePath
+        self.language = language
         self.content = content
+        self.lines = lines
         self.cursorPosition = cursorPosition
         self.tabSize = tabSize
         self.indentSize = indentSize
@@ -47,4 +60,3 @@ public struct SuggestionRequest: Codable {
         self.relevantCodeSnippets = relevantCodeSnippets
     }
 }
-
