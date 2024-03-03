@@ -44,7 +44,8 @@ extension ExtensionRequestType {
         endpoint: String,
         requestBody data: Data,
         reply: @escaping (Data?, Error?) -> Void,
-        handler: @escaping (Self) async throws -> Self.ResponseBody
+        handler: @escaping (Self) async throws -> Self.ResponseBody,
+        onceResponded: @escaping () -> Void = {}
     ) throws {
         try _handle(
             endpoint: endpoint,
@@ -52,6 +53,8 @@ extension ExtensionRequestType {
             reply: reply
         ) { (request: Self) async throws -> Self.ResponseBody in
             try await handler(request)
+        } onceResponded: {
+            onceResponded()
         }
     }
 }
@@ -63,6 +66,13 @@ public enum ExtensionRequests {
     public struct GetExtensionInformation: ExtensionRequestType {
         public typealias ResponseBody = ExtensionInfo
         public static let endpoint = "GetExtensionInformation"
+
+        public init() {}
+    }
+    
+    public struct Terminate: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "Terminate"
 
         public init() {}
     }
@@ -238,6 +248,17 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                     hasConfigurationScene: theExtension.sceneConfiguration.hasConfigurationScene,
                     chatPanelSceneInfo: theExtension.sceneConfiguration.chatPanelSceneInfo
                 )
+            }
+            
+            try ExtensionRequests.Terminate.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { _ in
+                return .none
+            } onceResponded: { [theExtension] in
+                theExtension.extensionWillTerminate()
+                exit(0)
             }
 
             try ExtensionRequests.NotifyActivateXcode.handle(

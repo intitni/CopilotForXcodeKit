@@ -179,7 +179,7 @@ public extension HostRequestType {
             reply: reply
         ) { (request: Self) async throws -> Self.ResponseBody in
             try await handler(request)
-        }
+        } onceResponded: {}
     }
 }
 

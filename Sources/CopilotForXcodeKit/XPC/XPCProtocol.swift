@@ -80,7 +80,8 @@ extension XPCRequestType {
         endpoint: String,
         requestBody data: Data,
         reply: @escaping (Data?, Error?) -> Void,
-        handler: @escaping (Request) async throws -> Response
+        handler: @escaping (Request) async throws -> Response,
+        onceResponded: @escaping () -> Void
     ) throws {
         guard endpoint == Self.endpoint else {
             return
@@ -92,12 +93,15 @@ extension XPCRequestType {
                     let responseBody = try await handler(requestBody)
                     let responseBodyData = try JSONEncoder().encode(responseBody)
                     reply(responseBodyData, nil)
+                    onceResponded()
                 } catch {
                     reply(nil, error)
+                    onceResponded()
                 }
             }
         } catch {
             reply(nil, error)
+            onceResponded()
         }
         throw XPCRequestHandlerHitError()
     }
