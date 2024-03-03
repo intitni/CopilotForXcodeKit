@@ -4,10 +4,13 @@ import Foundation
 public struct RelevantCodeSnippet: Codable {
     public var content: String
     public var priority: Int
+    @FallbackDecoding<EmptyString>
+    public var filePath: String
 
-    public init(content: String, priority: Int) {
+    public init(content: String, priority: Int, filePath: String) {
         self.content = content
         self.priority = priority
+        self.filePath = filePath
     }
 }
 
@@ -29,9 +32,11 @@ public struct SuggestionRequest: Codable {
     public var indentSize: Int
     /// Whether the file uses tabs for indentation.
     public var usesTabsForIndentation: Bool
-    /// Relevant code snippets.
+    /// Relevant code snippets. Already sorted by priority.
     ///
-    /// It will be empty if ``SuggestionServiceConfiguration/acceptsRelevantCodeSnippets`` is false.
+    /// It will be empty if ``SuggestionServiceConfiguration/acceptsRelevantCodeSnippets`` and
+    /// ``SuggestionServiceConfiguration/acceptsRelevantSnippetsFromOpenedFiles`` are false or
+    /// ``SuggestionServiceConfiguration/mixRelevantCodeSnippetsInSource`` is true.
     public var relevantCodeSnippets: [RelevantCodeSnippet]
 
     public init(
@@ -56,3 +61,4 @@ public struct SuggestionRequest: Codable {
         self.relevantCodeSnippets = relevantCodeSnippets
     }
 }
+
