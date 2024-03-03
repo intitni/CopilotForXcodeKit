@@ -15,7 +15,11 @@ final class SuggestionService: SuggestionServiceType {
 
     var configuration: SuggestionServiceConfiguration {
         /// Not implemented yet.
-        .init(acceptsRelevantCodeSnippets: true, mixRelevantCodeSnippetsInSource: false)
+        .init(
+            acceptsRelevantCodeSnippets: true,
+            mixRelevantCodeSnippetsInSource: false,
+            acceptsRelevantSnippetsFromOpenedFiles: true
+        )
     }
 
     func getSuggestions(
