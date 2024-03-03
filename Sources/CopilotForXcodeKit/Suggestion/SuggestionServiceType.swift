@@ -3,15 +3,16 @@ import Foundation
 
 /// A configuration for the host to decide it's behavior when using the service.
 public struct SuggestionServiceConfiguration: Codable {
-    /// Not implemented yet.
-    ///
     /// If true, the app will collect relevant code snippets for the code.
     /// Return `false` if you are doing it by yourself.
     @FallbackDecoding<EmptyBool>
     public var acceptsRelevantCodeSnippets: Bool
-    
-    /// Not implemented yet.
-    ///
+
+    /// If true, the app will collect relevant code snippets from the opened files.
+    /// Return `false` if you are doing it by yourself.
+    @FallbackDecoding<EmptyBool>
+    public var acceptsRelevantSnippetsFromOpenedFiles: Bool
+
     /// If true, the app will put the snippets into the source content.
     /// Useful when you don't have full control to the service.
     @FallbackDecoding<EmptyBool>
@@ -19,10 +20,12 @@ public struct SuggestionServiceConfiguration: Codable {
 
     public init(
         acceptsRelevantCodeSnippets: Bool,
-        mixRelevantCodeSnippetsInSource: Bool
+        mixRelevantCodeSnippetsInSource: Bool,
+        acceptsRelevantSnippetsFromOpenedFiles: Bool
     ) {
         self.acceptsRelevantCodeSnippets = acceptsRelevantCodeSnippets
         self.mixRelevantCodeSnippetsInSource = mixRelevantCodeSnippetsInSource
+        self.acceptsRelevantSnippetsFromOpenedFiles = acceptsRelevantSnippetsFromOpenedFiles
     }
 }
 
