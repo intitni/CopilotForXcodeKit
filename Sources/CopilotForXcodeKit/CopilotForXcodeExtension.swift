@@ -74,6 +74,10 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
 
     /// Called when connection is activated. You don't have to set the `host` property here.
     func connectionDidActivate(connectedTo host: HostServer)
+    
+    /// Called when the host app decides to quit this app. As soon as this function returns
+    /// the app will call `exit(0)` to kill itself.
+    func extensionWillTerminate()
 
     /// Called when Xcode becomes active.
     func xcodeDidBecomeActive()
@@ -129,6 +133,8 @@ public extension CopilotForXcodeExtension {
     }
 
     func shouldAccept(_: NSXPCConnection) -> Bool { true }
+    
+    func extensionWillTerminate() {}
 
     func connectionDidActivate(connectedTo host: HostServer) {}
 
