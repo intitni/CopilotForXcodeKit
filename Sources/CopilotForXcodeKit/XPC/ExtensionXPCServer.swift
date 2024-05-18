@@ -69,7 +69,7 @@ public enum ExtensionRequests {
 
         public init() {}
     }
-    
+
     public struct Terminate: ExtensionRequestType {
         public typealias ResponseBody = NoResponse
         public static let endpoint = "Terminate"
@@ -169,6 +169,16 @@ public enum ExtensionRequests {
         }
     }
 
+    public struct NotifyAppConfigurationChange: ExtensionRequestType {
+        public typealias ResponseBody = NoResponse
+        public var appConfiguration: AppConfiguration
+        public static let endpoint = "NotifyAppConfigurationChange"
+
+        public init(appConfiguration: AppConfiguration) {
+            self.appConfiguration = appConfiguration
+        }
+    }
+
     public enum SuggestionService {
         public struct GetSuggestions: ExtensionRequestType {
             public var request: SuggestionRequest
@@ -249,13 +259,13 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                     chatPanelSceneInfo: theExtension.sceneConfiguration.chatPanelSceneInfo
                 )
             }
-            
+
             try ExtensionRequests.Terminate.handle(
                 endpoint: endpoint,
                 requestBody: requestBody,
                 reply: reply
             ) { _ in
-                return .none
+                .none
             } onceResponded: { [theExtension] in
                 theExtension.extensionWillTerminate()
                 exit(0)
@@ -343,6 +353,15 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                     didUpdateDocumentAt: request.fileURL,
                     content: request.content
                 )
+                return .none
+            }
+            
+            try ExtensionRequests.NotifyAppConfigurationChange.handle(
+                endpoint: endpoint,
+                requestBody: requestBody,
+                reply: reply
+            ) { [theExtension] request in
+                theExtension.appConfigurationDidChange(request.appConfiguration)
                 return .none
             }
 
