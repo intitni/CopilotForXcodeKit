@@ -45,7 +45,11 @@ import SwiftUI
 /// Currently unimplemented. Return nil from ``promptToCodeService``.
 ///
 @available(macOS 13.0, *)
-public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
+public protocol CopilotForXcodeExtension:
+    AnyObject,
+    AppExtension,
+    CopilotForXcodeExtensionCapability
+{
     associatedtype TheSceneConfiguration: CopilotForXcodeExtensionSceneConfiguration
 
     /// The host app, aka the extension service of Copilot for Xcode.app. You can use this
@@ -53,6 +57,25 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     ///
     /// You don't have to worry about it's value, it will be set once the connection is ready.
     var host: HostServer? { get set }
+    /// Define scenes of the extension. You can use it to provide UI for the extension.
+    var sceneConfiguration: TheSceneConfiguration { get }
+
+    // MARK: Optional Methods
+
+    /// Check if the connection should be accepted.
+    func shouldAccept(_ connection: NSXPCConnection) -> Bool
+
+    /// Called when connection is activated. You don't have to set the `host` property here.
+    func connectionDidActivate(connectedTo host: HostServer)
+
+    /// Called when the host app decides to quit this app. As soon as this function returns
+    /// the app will call `exit(0)` to kill itself.
+    func extensionWillTerminate()
+}
+
+// MARK: - Capability
+
+public protocol CopilotForXcodeExtensionCapability {
     /// The suggestion service.
     ///
     /// Provide a non nil value if the extension provides a suggestion service, even if
@@ -64,29 +87,8 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
     var chatService: ChatServiceType? { get }
     /// Not implemented yet.
     var promptToCodeService: PromptToCodeServiceType? { get }
-    /// Define scenes of the extension. You can use it to provide UI for the extension.
-    var sceneConfiguration: TheSceneConfiguration { get }
 
     // MARK: Optional Methods
-
-    /// Check if the connection should be accepted.
-    func shouldAccept(_ connection: NSXPCConnection) -> Bool
-
-    /// Called when connection is activated. You don't have to set the `host` property here.
-    func connectionDidActivate(connectedTo host: HostServer)
-    
-    /// Called when the host app decides to quit this app. As soon as this function returns
-    /// the app will call `exit(0)` to kill itself.
-    func extensionWillTerminate()
-
-    /// Called when Xcode becomes active.
-    func xcodeDidBecomeActive()
-
-    /// Called when Xcode becomes inactive.
-    func xcodeDidBecomeInactive()
-
-    /// Called when Xcode switches editor.
-    func xcodeDidSwitchEditor()
 
     /// Called when a workspace is opened.
     ///
@@ -118,6 +120,14 @@ public protocol CopilotForXcodeExtension: AnyObject, AppExtension {
         didUpdateDocumentAt documentURL: URL,
         content: String
     )
+
+    /// Called when the application configuration is changed. The configuration contains information
+    /// like the current user-picked suggestion service, etc. You can use this to determine if
+    /// you would like to startup or dispose some resources.
+    ///
+    /// For example, if you are running a language server to provide suggestions, you may want to
+    /// kill the process when the user switched to another suggestion service.
+    func appConfigurationDidChange(_ configuration: AppConfiguration)
 }
 
 // MARK: - Default Implementation
@@ -133,11 +143,13 @@ public extension CopilotForXcodeExtension {
     }
 
     func shouldAccept(_: NSXPCConnection) -> Bool { true }
-    
+
     func extensionWillTerminate() {}
 
     func connectionDidActivate(connectedTo host: HostServer) {}
+}
 
+public extension CopilotForXcodeExtensionCapability {
     func xcodeDidBecomeActive() {}
 
     func xcodeDidBecomeInactive() {}
@@ -155,6 +167,8 @@ public extension CopilotForXcodeExtension {
     func workspace(_: WorkspaceInfo, didOpenDocumentAt _: URL) {}
 
     func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL, content: String) {}
+    
+    func appConfigurationDidChange(_: AppConfiguration) {}
 }
 
 // MARK: - Extension Configuration
@@ -190,6 +204,20 @@ public extension CopilotForXcodeExtensionConfiguration {
         theExtension.connectionDidActivate(connectedTo: host)
 
         return true
+    }
+}
+
+// MARK: - App Configuration
+
+public struct AppConfiguration: Codable, Equatable {
+    /// If the suggestion service in this extension is in use.
+    public var suggestionServiceInUse: Bool
+    /// If the chat service in this extension is in use.
+    public var chatServiceInUse: Bool
+
+    public init(suggestionServiceInUse: Bool, chatServiceInUse: Bool) {
+        self.suggestionServiceInUse = suggestionServiceInUse
+        self.chatServiceInUse = chatServiceInUse
     }
 }
 
