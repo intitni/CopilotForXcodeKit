@@ -144,11 +144,7 @@ public protocol CopilotForXcodeExtensionCapability {
     func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL)
 
     /// Called when a document is changed.
-    func workspace(
-        _ workspace: WorkspaceInfo,
-        didUpdateDocumentAt documentURL: URL,
-        content: String
-    )
+    func workspace(_ workspace: WorkspaceInfo, didUpdateDocumentAt documentURL: URL)
 
     /// Called occasionally to inform the extension how it is used in the app.
     ///
@@ -206,7 +202,7 @@ public extension CopilotForXcodeExtensionCapability {
 
     func workspace(_: WorkspaceInfo, didOpenDocumentAt _: URL) {}
 
-    func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL, content: String) {}
+    func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL) {}
 
     func extensionUsageDidChange(_: ExtensionUsage) {}
 }

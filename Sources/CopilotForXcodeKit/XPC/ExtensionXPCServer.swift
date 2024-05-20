@@ -348,11 +348,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(
-                    request.workspace,
-                    didUpdateDocumentAt: request.fileURL,
-                    content: request.content
-                )
+                theExtension.workspace(request.workspace, didUpdateDocumentAt: request.fileURL)
                 return .none
             }
 
