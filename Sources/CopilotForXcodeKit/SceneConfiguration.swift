@@ -1,7 +1,7 @@
 import ExtensionKit
 import Foundation
-import SwiftUI
 import OSLog
+import SwiftUI
 
 public let CopilotForXcodeConfigurationSceneId = "COPILOT_FOR_XCODE_CONFIGURATION_SCENE"
 
@@ -43,6 +43,20 @@ public protocol CopilotForXcodeExtensionSceneConfiguration {
 }
 
 @available(macOS 13.0, *)
+public struct NoSceneConfiguration: CopilotForXcodeExtensionSceneConfiguration {
+    public struct Group: CopilotForXcodeAppExtensionScene {
+        public var body: Never
+        public typealias Body = Never
+    }
+
+    public var configurationScene: ConfigurationScene<Never>? { nil }
+
+    public var chatPanelScenes: Group? { return nil }
+
+    public var chatPanelSceneInfo: [ChatPanelSceneInfo] { [] }
+}
+
+@available(macOS 13.0, *)
 extension CopilotForXcodeExtensionSceneConfiguration {
     var body: some CopilotForXcodeAppExtensionScene {
         CopilotForXcodeAppExtensionGroupedScene {
@@ -54,7 +68,7 @@ extension CopilotForXcodeExtensionSceneConfiguration {
             }
         }
     }
-    
+
     var hasConfigurationScene: Bool {
         configurationScene != nil
     }
@@ -112,7 +126,7 @@ open class CopilotForXcodeSceneModel: ObservableObject {
         connection.exportedObject = ExportedModel()
         connection.exportedInterface = NSXPCInterface(with: XPCProtocol.self)
         connection.remoteObjectInterface = NSXPCInterface(with: HostXPCProtocol.self)
-        self.host = HostServer(connection)
+        host = HostServer(connection)
         isConnected = true
     }
 }
@@ -138,7 +152,7 @@ public struct ConfigurationScene<
 
     public var body: some AppExtensionScene {
         return PrimitiveAppExtensionScene(id: CopilotForXcodeConfigurationSceneId) {
-            return self.content(self.sceneModel)
+            self.content(self.sceneModel)
         } onConnection: { connection in
             Logger.info("Configuration scene did receive connection.")
             self.sceneModel.connect(to: connection)

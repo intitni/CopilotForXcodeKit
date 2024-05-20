@@ -361,7 +361,10 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.extensionUsageDidChange(request.usage)
+                if theExtension.extensionUsage != request.usage {
+                    theExtension.extensionUsage = request.usage
+                    theExtension.extensionUsageDidChange(request.usage)
+                }
                 return .none
             }
 

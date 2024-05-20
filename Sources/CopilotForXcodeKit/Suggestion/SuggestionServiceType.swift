@@ -54,3 +54,20 @@ public protocol SuggestionServiceType {
     func cancelRequest(workspace: WorkspaceInfo) async
 }
 
+public struct NoSuggestionService: SuggestionServiceType {
+    public var configuration: SuggestionServiceConfiguration
+
+    public func getSuggestions(
+        _ request: SuggestionRequest,
+        workspace: WorkspaceInfo
+    ) async throws -> [CodeSuggestion] {
+        return []
+    }
+
+    public func notifyAccepted(_ suggestion: CodeSuggestion, workspace: WorkspaceInfo) async {}
+
+    public func notifyRejected(_ suggestions: [CodeSuggestion], workspace: WorkspaceInfo) async {}
+
+    public func cancelRequest(workspace: WorkspaceInfo) async {}
+}
+
