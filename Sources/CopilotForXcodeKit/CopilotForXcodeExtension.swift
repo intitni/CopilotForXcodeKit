@@ -145,9 +145,20 @@ public protocol CopilotForXcodeExtensionCapability {
 
     /// Called when a document is changed.
     ///
-    /// - note: If you want to access the content of the file, you will have to access the file by
-    /// yourself, or call ``HostServer/getDocument(at:)``.
-    func workspace(_ workspace: WorkspaceInfo, didUpdateDocumentAt documentURL: URL)
+    /// - attention: `content` could be nil if \
+    ///   • the document is too large \
+    ///   • the document is binary \
+    ///   • the document is git ignored \
+    ///   • the extension is not considered in-use by the host app \
+    ///   • the extension has no permission to access the file \
+    ///   \
+    ///   If you still want to access the file content in these cases,
+    ///   you will have to access the file by yourself, or call ``HostServer/getDocument(at:)``.
+    func workspace(
+        _ workspace: WorkspaceInfo,
+        didUpdateDocumentAt documentURL: URL,
+        content: String?
+    )
 
     /// Called occasionally to inform the extension how it is used in the app.
     ///
@@ -205,7 +216,11 @@ public extension CopilotForXcodeExtensionCapability {
 
     func workspace(_: WorkspaceInfo, didOpenDocumentAt _: URL) {}
 
-    func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL) {}
+    func workspace(
+        _ workspace: WorkspaceInfo,
+        didUpdateDocumentAt documentURL: URL,
+        content: String?
+    ) {}
 
     func extensionUsageDidChange(_: ExtensionUsage) {}
 }

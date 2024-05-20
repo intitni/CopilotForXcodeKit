@@ -157,12 +157,11 @@ public enum ExtensionRequests {
     public struct NotifyUpdateFile: ExtensionRequestType {
         public var fileURL: URL
         public var workspace: WorkspaceInfo
-        @FallbackDecoding<EmptyString>
-        public var content: String
+        public var content: String?
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyUpdateFile"
 
-        public init(fileURL: URL, workspace: WorkspaceInfo, content: String) {
+        public init(fileURL: URL, workspace: WorkspaceInfo, content: String?) {
             self.fileURL = fileURL
             self.workspace = workspace
             self.content = content
@@ -348,7 +347,11 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.workspace(request.workspace, didUpdateDocumentAt: request.fileURL)
+                theExtension.workspace(
+                    request.workspace,
+                    didUpdateDocumentAt: request.fileURL,
+                    content: request.content
+                )
                 return .none
             }
 
