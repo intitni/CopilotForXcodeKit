@@ -144,6 +144,9 @@ public protocol CopilotForXcodeExtensionCapability {
     func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL)
 
     /// Called when a document is changed.
+    ///
+    /// - note: If you want to access the content of the file, you will have to access the file by
+    /// yourself, or call ``HostServer/getDocument(at:)``.
     func workspace(_ workspace: WorkspaceInfo, didUpdateDocumentAt documentURL: URL)
 
     /// Called occasionally to inform the extension how it is used in the app.
