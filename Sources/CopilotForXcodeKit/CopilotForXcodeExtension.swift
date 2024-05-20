@@ -186,10 +186,24 @@ public extension CopilotForXcodeExtensionProtocol where Self: CopilotForXcodeExt
 @available(macOS 13.0, *)
 public extension CopilotForXcodeExtensionProtocol {
     func shouldAccept(_: NSXPCConnection) -> Bool { true }
-
+    
     func extensionWillTerminate() {}
-
+    
     func connectionDidActivate(connectedTo host: HostServer) {}
+}
+
+@available(macOS 13.0, *)
+extension CopilotForXcodeExtensionProtocol {
+    var extensionInfo: ExtensionInfo {
+        return ExtensionInfo(
+            providesSuggestionService: suggestionService != nil,
+            suggestionServiceConfiguration: suggestionService?.configuration,
+            providesChatService: chatService != nil,
+            providesPromptToCodeService: promptToCodeService != nil,
+            hasConfigurationScene: sceneConfiguration.hasConfigurationScene,
+            chatPanelSceneInfo: sceneConfiguration.chatPanelSceneInfo
+        )
+    }
 }
 
 @available(macOS 13.0, *)
@@ -290,4 +304,3 @@ public struct ExtensionUsage: Codable, Equatable {
         self.isChatServiceInUse = isChatServiceInUse
     }
 }
-

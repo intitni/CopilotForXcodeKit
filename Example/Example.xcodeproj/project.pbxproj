@@ -14,7 +14,7 @@
 		C8C505672B3FFE4E00B68DA9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8C505662B3FFE4E00B68DA9 /* Assets.xcassets */; };
 		C8C5056A2B3FFE4E00B68DA9 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = C8C505692B3FFE4E00B68DA9 /* Preview Assets.xcassets */; };
 		C8C505782B3FFE8400B68DA9 /* ExampleExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C505772B3FFE8400B68DA9 /* ExampleExtension.swift */; };
-		C8C5057D2B3FFE8400B68DA9 /* ExampleExtension Debug.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8C505752B3FFE8400B68DA9 /* ExampleExtension Debug.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		C8C5057D2B3FFE8400B68DA9 /* ExampleExtension.appex in Embed ExtensionKit Extensions */ = {isa = PBXBuildFile; fileRef = C8C505752B3FFE8400B68DA9 /* ExampleExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		C8C505832B3FFF0500B68DA9 /* SceneConfiguration.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8C505822B3FFF0500B68DA9 /* SceneConfiguration.swift */; };
 /* End PBXBuildFile section */
 
@@ -35,7 +35,7 @@
 			dstPath = "$(EXTENSIONS_FOLDER_PATH)";
 			dstSubfolderSpec = 16;
 			files = (
-				C8C5057D2B3FFE8400B68DA9 /* ExampleExtension Debug.appex in Embed ExtensionKit Extensions */,
+				C8C5057D2B3FFE8400B68DA9 /* ExampleExtension.appex in Embed ExtensionKit Extensions */,
 			);
 			name = "Embed ExtensionKit Extensions";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -50,7 +50,7 @@
 		C8C505662B3FFE4E00B68DA9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C8C505692B3FFE4E00B68DA9 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		C8C5056B2B3FFE4E00B68DA9 /* Example.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Example.entitlements; sourceTree = "<group>"; };
-		C8C505752B3FFE8400B68DA9 /* ExampleExtension Debug.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = "ExampleExtension Debug.appex"; sourceTree = BUILT_PRODUCTS_DIR; };
+		C8C505752B3FFE8400B68DA9 /* ExampleExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.extensionkit-extension"; includeInIndex = 0; path = ExampleExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		C8C505772B3FFE8400B68DA9 /* ExampleExtension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleExtension.swift; sourceTree = "<group>"; };
 		C8C505792B3FFE8400B68DA9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		C8C5057A2B3FFE8400B68DA9 /* ExampleExtension.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ExampleExtension.entitlements; sourceTree = "<group>"; };
@@ -90,7 +90,7 @@
 			isa = PBXGroup;
 			children = (
 				C8C5055F2B3FFE4D00B68DA9 /* Example.app */,
-				C8C505752B3FFE8400B68DA9 /* ExampleExtension Debug.appex */,
+				C8C505752B3FFE8400B68DA9 /* ExampleExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -173,7 +173,7 @@
 				C8C125882B40000300586063 /* CopilotForXcodeKit */,
 			);
 			productName = ExampleExtension;
-			productReference = C8C505752B3FFE8400B68DA9 /* ExampleExtension Debug.appex */;
+			productReference = C8C505752B3FFE8400B68DA9 /* ExampleExtension.appex */;
 			productType = "com.apple.product-type.extensionkit-extension";
 		};
 /* End PBXNativeTarget section */
@@ -456,7 +456,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.intii.CopilotForXcodeKit.Example.debug.ExampleExtension;
-				PRODUCT_NAME = "$(TARGET_NAME) Debug";
+				PRODUCT_NAME = ExampleExtension;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -482,7 +482,7 @@
 				);
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.intii.CopilotForXcodeKit.Example.ExampleExtension;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				PRODUCT_NAME = ExampleExtension;
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;

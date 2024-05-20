@@ -249,14 +249,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] _ in
-                ExtensionInfo(
-                    providesSuggestionService: theExtension.suggestionService != nil,
-                    suggestionServiceConfiguration: theExtension.suggestionService?.configuration,
-                    providesChatService: theExtension.chatService != nil,
-                    providesPromptToCodeService: theExtension.promptToCodeService != nil,
-                    hasConfigurationScene: theExtension.sceneConfiguration.hasConfigurationScene,
-                    chatPanelSceneInfo: theExtension.sceneConfiguration.chatPanelSceneInfo
-                )
+                theExtension.extensionInfo
             }
 
             try ExtensionRequests.Terminate.handle(
