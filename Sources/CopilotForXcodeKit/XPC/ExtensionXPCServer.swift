@@ -169,13 +169,13 @@ public enum ExtensionRequests {
         }
     }
 
-    public struct NotifyAppConfigurationChange: ExtensionRequestType {
+    public struct NotifyExtensionUsageChange: ExtensionRequestType {
         public typealias ResponseBody = NoResponse
-        public var appConfiguration: AppConfiguration
-        public static let endpoint = "NotifyAppConfigurationChange"
+        public var usage: ExtensionUsage
+        public static let endpoint = "NotifyExtensionUsageChange"
 
-        public init(appConfiguration: AppConfiguration) {
-            self.appConfiguration = appConfiguration
+        public init(usage: ExtensionUsage) {
+            self.usage = usage
         }
     }
 
@@ -355,13 +355,13 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 )
                 return .none
             }
-            
-            try ExtensionRequests.NotifyAppConfigurationChange.handle(
+
+            try ExtensionRequests.NotifyExtensionUsageChange.handle(
                 endpoint: endpoint,
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.appConfigurationDidChange(request.appConfiguration)
+                theExtension.extensionUsageDidChange(request.usage)
                 return .none
             }
 

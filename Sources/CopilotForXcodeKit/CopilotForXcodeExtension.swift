@@ -121,13 +121,14 @@ public protocol CopilotForXcodeExtensionCapability {
         content: String
     )
 
-    /// Called when the application configuration is changed. The configuration contains information
-    /// like the current user-picked suggestion service, etc. You can use this to determine if
-    /// you would like to startup or dispose some resources.
+    /// Called occasionally to inform the extension how it is used in the app.
+    ///
+    /// The `usage` contains information like the current user-picked suggestion service, etc.
+    /// You can use this to determine if you would like to startup or dispose some resources.
     ///
     /// For example, if you are running a language server to provide suggestions, you may want to
-    /// kill the process when the user switched to another suggestion service.
-    func appConfigurationDidChange(_ configuration: AppConfiguration)
+    /// kill the process when the suggestion service is no longer in use.
+    func extensionUsageDidChange(_ usage: ExtensionUsage)
 }
 
 // MARK: - Default Implementation
@@ -168,7 +169,7 @@ public extension CopilotForXcodeExtensionCapability {
 
     func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL, content: String) {}
     
-    func appConfigurationDidChange(_: AppConfiguration) {}
+    func extensionUsageDidChange(_: ExtensionUsage) {}
 }
 
 // MARK: - Extension Configuration
@@ -209,15 +210,15 @@ public extension CopilotForXcodeExtensionConfiguration {
 
 // MARK: - App Configuration
 
-public struct AppConfiguration: Codable, Equatable {
+public struct ExtensionUsage: Codable, Equatable {
     /// If the suggestion service in this extension is in use.
-    public var suggestionServiceInUse: Bool
+    public var isSuggestionServiceInUse: Bool
     /// If the chat service in this extension is in use.
-    public var chatServiceInUse: Bool
+    public var isChatServiceInUse: Bool
 
-    public init(suggestionServiceInUse: Bool, chatServiceInUse: Bool) {
-        self.suggestionServiceInUse = suggestionServiceInUse
-        self.chatServiceInUse = chatServiceInUse
+    public init(isSuggestionServiceInUse: Bool, isChatServiceInUse: Bool) {
+        self.isSuggestionServiceInUse = isSuggestionServiceInUse
+        self.isChatServiceInUse = isChatServiceInUse
     }
 }
 
