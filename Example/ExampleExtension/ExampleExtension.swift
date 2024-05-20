@@ -40,6 +40,5 @@ class Extension: CopilotForXcodeExtension {
     }
 }
 
-class EmptyExtension: CopilotForXcodeExtension {
-    // Everything has a default implementation.
-}
+/// Everything has a default implementation.
+class EmptyExtension: CopilotForXcodeExtension {}
