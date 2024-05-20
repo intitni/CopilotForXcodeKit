@@ -67,7 +67,11 @@ public enum HostRequests {
     
     public struct GetDocument: HostRequestType {
         public struct ResponseBody: Codable {
-            var content: String
+            public var content: String
+            
+            public init(content: String) {
+                self.content = content
+            }
         }
         public var documentURL: URL
         public static let endpoint = "GetDocument"
