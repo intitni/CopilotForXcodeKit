@@ -5,7 +5,7 @@ import SwiftUI
 
 /// The definition of the extension.
 ///
-/// Conform the entry point of your extension to this protocol.
+/// Conform the entry point of your extension to this type.
 ///
 /// ```swift
 /// @main
@@ -13,11 +13,13 @@ import SwiftUI
 /// ```
 ///
 /// Copilot for Xcode will initiate the extension at launch and when users enable the extension.
-/// Once connected, ``connectionDidActivate(connectedTo:)`` is called, and ``host`` is set.
+/// Once connected, ``connectionDidActivate(connectedTo:)`` is called, and
+/// ``CopilotForXcodeExtensionBase/host`` is set.
 ///
-/// ``host`` is then available for communication with the host app.
+/// ``CopilotForXcodeExtensionBase/host`` is then available for communication with the host app.
 ///
-/// For scenes, each has a separate connection to the host app. While you can still use ``host``,
+/// For scenes, each has a separate connection to the host app. While you can still use
+/// ``CopilotForXcodeExtensionBase/host``,
 /// ``CopilotForXcodeSceneModel/host`` is recommended for easier communication within scenes.
 ///
 /// ## Observing the Workspace
@@ -25,38 +27,61 @@ import SwiftUI
 /// Use `workspace`-prefixed methods to monitor workspace changes.
 ///
 /// Note that workspaces may be open prior to extension activation.
-/// In this case, use ``HostServer/getExistedWorkspaces`` to fetch all ``WorkspaceInfo``.
+/// In this case, use ``HostServer/getExistedWorkspaces()`` to fetch all ``WorkspaceInfo``.
 ///
 /// ## Providing UI
 ///
 /// If your extension includes UI, provide a ``CopilotForXcodeExtensionSceneConfiguration``
-/// implementation via ``sceneConfiguration``.
+/// implementation via ``CopilotForXcodeExtensionProtocol/sceneConfiguration``.
 ///
 /// ## Providing Suggestion Service
 ///
-/// If your extension offers a suggestion service, return it via ``suggestionService``.
+/// If your extension offers a suggestion service, return it via
+/// ``CopilotForXcodeExtensionCapability/suggestionService``.
 ///
 /// ## Providing Chat Service
 ///
-/// Currently unimplemented. Return nil from ``chatService``.
+/// Currently unimplemented. Return nil from ``CopilotForXcodeExtensionCapability/chatService``.
 ///
 /// ## Providing Prompt to Code Service
 ///
-/// Currently unimplemented. Return nil from ``promptToCodeService``.
+/// Currently unimplemented. Return nil from
+/// ``CopilotForXcodeExtensionCapability/promptToCodeService``.
 ///
 @available(macOS 13.0, *)
-public protocol CopilotForXcodeExtension:
+public typealias CopilotForXcodeExtension =
+    CopilotForXcodeExtensionBase
+        & CopilotForXcodeExtensionProtocol
+
+/// The base class of the extension.
+@available(macOS 13.0, *)
+open class CopilotForXcodeExtensionBase {
+    /// The host app, aka the extension service of Copilot for Xcode.app. You can use this
+    /// object to communicate with the host app.
+    ///
+    /// You don't have to worry about it's value, it will be set once the connection is ready.
+    public internal(set) var host: HostServer?
+
+    /// The usage of this extension in Copilot for Xcode.
+    ///
+    /// It will begin with everything unused until Copilot for Xcode reports it's usage.
+    public internal(set) var extensionUsage: ExtensionUsage = .init(
+        isSuggestionServiceInUse: false,
+        isChatServiceInUse: false
+    )
+
+    public required init() {}
+}
+
+/// The interface of the extension.
+@available(macOS 13.0, *)
+public protocol CopilotForXcodeExtensionProtocol:
     AnyObject,
     AppExtension,
     CopilotForXcodeExtensionCapability
 {
     associatedtype TheSceneConfiguration: CopilotForXcodeExtensionSceneConfiguration
 
-    /// The host app, aka the extension service of Copilot for Xcode.app. You can use this
-    /// object to communicate with the host app.
-    ///
-    /// You don't have to worry about it's value, it will be set once the connection is ready.
-    var host: HostServer? { get set }
     /// Define scenes of the extension. You can use it to provide UI for the extension.
     var sceneConfiguration: TheSceneConfiguration { get }
 
@@ -76,17 +101,21 @@ public protocol CopilotForXcodeExtension:
 // MARK: - Capability
 
 public protocol CopilotForXcodeExtensionCapability {
+    associatedtype TheSuggestionService: SuggestionServiceType
+    associatedtype TheChatService: ChatServiceType
+    associatedtype ThePromptToCodeService: PromptToCodeServiceType
+
     /// The suggestion service.
     ///
     /// Provide a non nil value if the extension provides a suggestion service, even if
     /// the extension is not yet ready to provide suggestions.
     ///
-    /// Leave it `nil` if the extension does not provide a suggestion service.
-    var suggestionService: SuggestionServiceType? { get }
+    /// If you don't have a suggestion service in this extension, simply ignore this property.
+    var suggestionService: TheSuggestionService? { get }
     /// Not implemented yet.
-    var chatService: ChatServiceType? { get }
+    var chatService: TheChatService? { get }
     /// Not implemented yet.
-    var promptToCodeService: PromptToCodeServiceType? { get }
+    var promptToCodeService: ThePromptToCodeService? { get }
 
     // MARK: Optional Methods
 
@@ -115,25 +144,36 @@ public protocol CopilotForXcodeExtensionCapability {
     func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL)
 
     /// Called when a document is changed.
+    ///
+    /// - attention: `content` could be nil if \
+    ///   • the document is too large \
+    ///   • the document is binary \
+    ///   • the document is git ignored \
+    ///   • the extension is not considered in-use by the host app \
+    ///   • the extension has no permission to access the file \
+    ///   \
+    ///   If you still want to access the file content in these cases,
+    ///   you will have to access the file by yourself, or call ``HostServer/getDocument(at:)``.
     func workspace(
         _ workspace: WorkspaceInfo,
         didUpdateDocumentAt documentURL: URL,
-        content: String
+        content: String?
     )
 
-    /// Called when the application configuration is changed. The configuration contains information
-    /// like the current user-picked suggestion service, etc. You can use this to determine if
-    /// you would like to startup or dispose some resources.
+    /// Called occasionally to inform the extension how it is used in the app.
+    ///
+    /// The `usage` contains information like the current user-picked suggestion service, etc.
+    /// You can use this to determine if you would like to startup or dispose some resources.
     ///
     /// For example, if you are running a language server to provide suggestions, you may want to
-    /// kill the process when the user switched to another suggestion service.
-    func appConfigurationDidChange(_ configuration: AppConfiguration)
+    /// kill the process when the suggestion service is no longer in use.
+    func extensionUsageDidChange(_ usage: ExtensionUsage)
 }
 
 // MARK: - Default Implementation
 
 @available(macOS 13.0, *)
-public extension CopilotForXcodeExtension {
+public extension CopilotForXcodeExtensionProtocol where Self: CopilotForXcodeExtensionBase {
     var configuration: AppExtensionSceneConfiguration {
         return .init(
             // swiftformat:disable:next all
@@ -141,12 +181,36 @@ public extension CopilotForXcodeExtension {
             configuration: CopilotForXcodeExtensionConfiguration(self)
         )
     }
+}
 
+@available(macOS 13.0, *)
+public extension CopilotForXcodeExtensionProtocol {
     func shouldAccept(_: NSXPCConnection) -> Bool { true }
-
+    
     func extensionWillTerminate() {}
-
+    
     func connectionDidActivate(connectedTo host: HostServer) {}
+}
+
+@available(macOS 13.0, *)
+extension CopilotForXcodeExtensionProtocol {
+    var extensionInfo: ExtensionInfo {
+        return ExtensionInfo(
+            providesSuggestionService: suggestionService != nil,
+            suggestionServiceConfiguration: suggestionService?.configuration,
+            providesChatService: chatService != nil,
+            providesPromptToCodeService: promptToCodeService != nil,
+            hasConfigurationScene: sceneConfiguration.hasConfigurationScene,
+            chatPanelSceneInfo: sceneConfiguration.chatPanelSceneInfo
+        )
+    }
+}
+
+@available(macOS 13.0, *)
+public extension CopilotForXcodeExtensionProtocol
+    where TheSceneConfiguration == NoSceneConfiguration
+{
+    var sceneConfiguration: NoSceneConfiguration { NoSceneConfiguration() }
 }
 
 public extension CopilotForXcodeExtensionCapability {
@@ -166,9 +230,29 @@ public extension CopilotForXcodeExtensionCapability {
 
     func workspace(_: WorkspaceInfo, didOpenDocumentAt _: URL) {}
 
-    func workspace(_: WorkspaceInfo, didUpdateDocumentAt _: URL, content: String) {}
-    
-    func appConfigurationDidChange(_: AppConfiguration) {}
+    func workspace(
+        _ workspace: WorkspaceInfo,
+        didUpdateDocumentAt documentURL: URL,
+        content: String?
+    ) {}
+
+    func extensionUsageDidChange(_: ExtensionUsage) {}
+}
+
+public extension CopilotForXcodeExtensionCapability
+    where TheSuggestionService == NoSuggestionService
+{
+    var suggestionService: TheSuggestionService? { nil }
+}
+
+public extension CopilotForXcodeExtensionCapability
+    where ThePromptToCodeService == NoPromptToCodeService
+{
+    var promptToCodeService: ThePromptToCodeService? { nil }
+}
+
+public extension CopilotForXcodeExtensionCapability where TheChatService == NoChatService {
+    var chatService: TheChatService? { nil }
 }
 
 // MARK: - Extension Configuration
@@ -209,15 +293,14 @@ public extension CopilotForXcodeExtensionConfiguration {
 
 // MARK: - App Configuration
 
-public struct AppConfiguration: Codable, Equatable {
+public struct ExtensionUsage: Codable, Equatable {
     /// If the suggestion service in this extension is in use.
-    public var suggestionServiceInUse: Bool
+    public var isSuggestionServiceInUse: Bool
     /// If the chat service in this extension is in use.
-    public var chatServiceInUse: Bool
+    public var isChatServiceInUse: Bool
 
-    public init(suggestionServiceInUse: Bool, chatServiceInUse: Bool) {
-        self.suggestionServiceInUse = suggestionServiceInUse
-        self.chatServiceInUse = chatServiceInUse
+    public init(isSuggestionServiceInUse: Bool, isChatServiceInUse: Bool) {
+        self.isSuggestionServiceInUse = isSuggestionServiceInUse
+        self.isChatServiceInUse = isChatServiceInUse
     }
 }
-

@@ -24,6 +24,9 @@ public struct SuggestionRequest: Codable {
     public var language: CodeLanguage?
     /// The content. Please not that the content may not be exactly the same as the file content.
     public var content: String
+    /// The unchanged file content.
+    @FallbackDecoding<EmptyString>
+    public var originalContent: String
     /// The cursor position in the content.
     public var cursorPosition: CursorPosition
     /// Tab size.
@@ -44,6 +47,7 @@ public struct SuggestionRequest: Codable {
         relativePath: String,
         language: CodeLanguage,
         content: String,
+        originalContent: String,
         cursorPosition: CursorPosition,
         tabSize: Int,
         indentSize: Int,
@@ -54,6 +58,7 @@ public struct SuggestionRequest: Codable {
         self.relativePath = relativePath
         self.language = language
         self.content = content
+        self.originalContent = originalContent
         self.cursorPosition = cursorPosition
         self.tabSize = tabSize
         self.indentSize = indentSize

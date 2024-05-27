@@ -157,25 +157,24 @@ public enum ExtensionRequests {
     public struct NotifyUpdateFile: ExtensionRequestType {
         public var fileURL: URL
         public var workspace: WorkspaceInfo
-        @FallbackDecoding<EmptyString>
-        public var content: String
+        public var content: String?
         public typealias ResponseBody = NoResponse
         public static let endpoint = "NotifyUpdateFile"
 
-        public init(fileURL: URL, workspace: WorkspaceInfo, content: String) {
+        public init(fileURL: URL, workspace: WorkspaceInfo, content: String?) {
             self.fileURL = fileURL
             self.workspace = workspace
             self.content = content
         }
     }
 
-    public struct NotifyAppConfigurationChange: ExtensionRequestType {
+    public struct NotifyExtensionUsageChange: ExtensionRequestType {
         public typealias ResponseBody = NoResponse
-        public var appConfiguration: AppConfiguration
-        public static let endpoint = "NotifyAppConfigurationChange"
+        public var usage: ExtensionUsage
+        public static let endpoint = "NotifyExtensionUsageChange"
 
-        public init(appConfiguration: AppConfiguration) {
-            self.appConfiguration = appConfiguration
+        public init(usage: ExtensionUsage) {
+            self.usage = usage
         }
     }
 
@@ -250,14 +249,7 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] _ in
-                ExtensionInfo(
-                    providesSuggestionService: theExtension.suggestionService != nil,
-                    suggestionServiceConfiguration: theExtension.suggestionService?.configuration,
-                    providesChatService: theExtension.chatService != nil,
-                    providesPromptToCodeService: theExtension.promptToCodeService != nil,
-                    hasConfigurationScene: theExtension.sceneConfiguration.hasConfigurationScene,
-                    chatPanelSceneInfo: theExtension.sceneConfiguration.chatPanelSceneInfo
-                )
+                theExtension.extensionInfo
             }
 
             try ExtensionRequests.Terminate.handle(
@@ -355,13 +347,16 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 )
                 return .none
             }
-            
-            try ExtensionRequests.NotifyAppConfigurationChange.handle(
+
+            try ExtensionRequests.NotifyExtensionUsageChange.handle(
                 endpoint: endpoint,
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                theExtension.appConfigurationDidChange(request.appConfiguration)
+                if theExtension.extensionUsage != request.usage {
+                    theExtension.extensionUsage = request.usage
+                    theExtension.extensionUsageDidChange(request.usage)
+                }
                 return .none
             }
 

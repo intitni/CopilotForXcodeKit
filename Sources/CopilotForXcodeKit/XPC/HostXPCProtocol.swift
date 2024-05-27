@@ -64,6 +64,18 @@ public enum HostRequests {
         public typealias ResponseBody = [WorkspaceInfo]
         public static let endpoint = "getExistedWorkspaces"
     }
+    
+    public struct GetDocument: HostRequestType {
+        public struct ResponseBody: Codable {
+            public var content: String
+            
+            public init(content: String) {
+                self.content = content
+            }
+        }
+        public var documentURL: URL
+        public static let endpoint = "GetDocument"
+    }
 
     public struct GetActiveEditor: HostRequestType {
         public typealias ResponseBody = Editor?
@@ -115,6 +127,11 @@ public final class HostServer {
     /// Get the existed workspaces.
     public func getExistedWorkspaces() async throws -> [WorkspaceInfo] {
         try await send(HostRequests.GetExistedWorkspaces())
+    }
+    
+    /// Get the document content of a URL.
+    public func getDocument(at url: URL) async throws -> String {
+        try await send(HostRequests.GetDocument(documentURL: url)).content
     }
 
     /// Run a command from a source editor extension.

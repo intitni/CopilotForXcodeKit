@@ -1,25 +1,23 @@
 import CopilotForXcodeKit
 import Foundation
 
+/// Typically, you must implement a sub class of ``CopilotForXcodeExtension`` and
+/// mark it as the main entry point.
 @main
 class Extension: CopilotForXcodeExtension {
-    var host: HostServer?
-    var suggestionService: SuggestionServiceType?
-    var chatService: ChatServiceType? = nil
-    var promptToCodeService: PromptToCodeServiceType? = nil
+    var suggestionService: SuggestionService?
     var sceneConfiguration = SceneConfiguration()
 
     required init() {
         let service = SuggestionService()
         suggestionService = service
-        
+        super.init()
         /// If you need to access the global ``HostServer`` from the services.
         service.ext = self
     }
 
+    /// When this method is called, the ``host`` property will be set automatically.
     func connectionDidActivate(connectedTo host: HostServer) {
-        /// When this method is called, the ``host`` property will be set automatically.
-
         Task {
             try await host.toast("Connected to Example Extension")
         }
@@ -42,3 +40,5 @@ class Extension: CopilotForXcodeExtension {
     }
 }
 
+/// Everything has a default implementation.
+class EmptyExtension: CopilotForXcodeExtension {}
