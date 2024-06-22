@@ -54,6 +54,15 @@ public protocol SuggestionServiceType {
     func cancelRequest(workspace: WorkspaceInfo) async
 }
 
+public struct SuggestionServiceNoticeError: Error, LocalizedError {
+    public let error: Error
+    public init(error: Error) {
+        self.error = error
+    }
+    
+    public var errorDescription: String? { error.localizedDescription }
+}
+
 public struct NoSuggestionService: SuggestionServiceType {
     public var configuration: SuggestionServiceConfiguration
 
