@@ -365,8 +365,8 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                guard let service = theExtension.suggestionService
-                else { return .init(suggestions: []) }
+                let service = theExtension.suggestionService
+                if service is NoSuggestionService { return .init(suggestions: []) }
                 let suggestions = try await service.getSuggestions(
                     request.request,
                     workspace: request.workspace
@@ -379,8 +379,8 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                guard let service = theExtension.suggestionService
-                else { return .none }
+                let service = theExtension.suggestionService
+                if service is NoSuggestionService { return .none }
                 await service.notifyAccepted(request.suggestion, workspace: request.workspace)
                 return .none
             }
@@ -390,8 +390,8 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                guard let service = theExtension.suggestionService
-                else { return .none }
+                let service = theExtension.suggestionService
+                if service is NoSuggestionService { return .none }
                 await service.notifyRejected(request.suggestions, workspace: request.workspace)
                 return .none
             }
@@ -401,8 +401,8 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 requestBody: requestBody,
                 reply: reply
             ) { [theExtension] request in
-                guard let service = theExtension.suggestionService
-                else { return .none }
+                let service = theExtension.suggestionService
+                if service is NoSuggestionService { return .none }
                 await service.cancelRequest(workspace: request.workspace)
                 return .none
             }
