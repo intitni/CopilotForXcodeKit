@@ -111,11 +111,11 @@ public protocol CopilotForXcodeExtensionCapability {
     /// the extension is not yet ready to provide suggestions.
     ///
     /// If you don't have a suggestion service in this extension, simply ignore this property.
-    var suggestionService: TheSuggestionService? { get }
+    var suggestionService: TheSuggestionService { get }
     /// Not implemented yet.
-    var chatService: TheChatService? { get }
+    var chatService: TheChatService { get }
     /// Not implemented yet.
-    var promptToCodeService: ThePromptToCodeService? { get }
+    var promptToCodeService: ThePromptToCodeService { get }
 
     // MARK: Optional Methods
 
@@ -186,9 +186,9 @@ public extension CopilotForXcodeExtensionProtocol where Self: CopilotForXcodeExt
 @available(macOS 13.0, *)
 public extension CopilotForXcodeExtensionProtocol {
     func shouldAccept(_: NSXPCConnection) -> Bool { true }
-    
+
     func extensionWillTerminate() {}
-    
+
     func connectionDidActivate(connectedTo host: HostServer) {}
 }
 
@@ -196,10 +196,10 @@ public extension CopilotForXcodeExtensionProtocol {
 extension CopilotForXcodeExtensionProtocol {
     var extensionInfo: ExtensionInfo {
         return ExtensionInfo(
-            providesSuggestionService: suggestionService != nil,
-            suggestionServiceConfiguration: suggestionService?.configuration,
-            providesChatService: chatService != nil,
-            providesPromptToCodeService: promptToCodeService != nil,
+            providesSuggestionService: !(suggestionService is NoSuggestionService),
+            suggestionServiceConfiguration: suggestionService.configuration,
+            providesChatService: !(chatService is NoChatService),
+            providesPromptToCodeService: !(promptToCodeService is NoPromptToCodeService),
             hasConfigurationScene: sceneConfiguration.hasConfigurationScene,
             chatPanelSceneInfo: sceneConfiguration.chatPanelSceneInfo
         )
@@ -242,17 +242,23 @@ public extension CopilotForXcodeExtensionCapability {
 public extension CopilotForXcodeExtensionCapability
     where TheSuggestionService == NoSuggestionService
 {
-    var suggestionService: TheSuggestionService? { nil }
+    var suggestionService: TheSuggestionService {
+        NoSuggestionService(configuration: .init(
+            acceptsRelevantCodeSnippets: false,
+            mixRelevantCodeSnippetsInSource: false,
+            acceptsRelevantSnippetsFromOpenedFiles: false
+        ))
+    }
 }
 
 public extension CopilotForXcodeExtensionCapability
     where ThePromptToCodeService == NoPromptToCodeService
 {
-    var promptToCodeService: ThePromptToCodeService? { nil }
+    var promptToCodeService: ThePromptToCodeService { NoPromptToCodeService() }
 }
 
 public extension CopilotForXcodeExtensionCapability where TheChatService == NoChatService {
-    var chatService: TheChatService? { nil }
+    var chatService: TheChatService { NoChatService() }
 }
 
 // MARK: - Extension Configuration
@@ -304,3 +310,4 @@ public struct ExtensionUsage: Codable, Equatable {
         self.isChatServiceInUse = isChatServiceInUse
     }
 }
+
