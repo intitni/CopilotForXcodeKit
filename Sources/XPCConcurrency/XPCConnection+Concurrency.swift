@@ -37,10 +37,10 @@ public enum XPCConnectionError: Error, LocalizedError {
 }
 
 /// Connects to the XPC service and calls the given function with the service proxy.
-@_unsafeInheritExecutor
 public func withXPCServiceConnected<T, P>(
     connection: NSXPCConnection,
     as _: P.Type = P.self,
+    isolation: isolated(any Actor)? = #isolation,
     _ fn: @escaping (P, XPCServiceConnectionContinuation<T>) -> Void
 ) async throws -> T {
     let stream: AsyncThrowingStream<T, Error> = AsyncThrowingStream { continuation in
@@ -57,7 +57,7 @@ public func withXPCServiceConnected<T, P>(
     for try await item in stream {
         return item
     }
-    
+
     throw CancellationError()
 }
 
