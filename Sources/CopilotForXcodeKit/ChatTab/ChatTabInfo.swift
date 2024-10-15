@@ -3,8 +3,11 @@ import Foundation
 public struct ExtensionChatTabInfo: Codable, Equatable {
     /// The kind of a chat tab.
     public enum Kind: Codable {
+        /// The web content can be either a HTML string, a URL or a file URL.
         public enum WebContent: Codable, Equatable {
+            /// A web URL or a file URL.
             case url(URL)
+            /// A HTML string.
             case html(String)
         }
 
@@ -17,18 +20,14 @@ public struct ExtensionChatTabInfo: Codable, Equatable {
         ///
         /// - warning: It will also slow down the host window and heavily bring up the CPU usage.
         case extensionKit(id: String)
-        /// A web view base chat tab. You can access the APIs through JavaScript. It can be a web
-        /// page or a local file.
-        ///
-        /// Please visit the
-        /// [documentation](https://copilotforxcode.intii.com/extension/webview-base-chat-tab) for
-        /// more information.
+        /// A web view base chat tab. You can access the APIs through Javascript. The web content
+        /// can be either a HTML string, a URL or a file URL.
         case webView(WebContent)
         /// Unknown.
         case unknown
     }
 
-    /// The unique identifier of the chat tab.
+    /// The unique identifier of the chat tab. You will need it to determine the kind of a chat tab.
     public let kindId: String
     /// The title of the chat tab.
     public let title: String

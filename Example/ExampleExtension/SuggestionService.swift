@@ -7,14 +7,12 @@ import Foundation
 ///
 /// You can use ``HostServer/getExistedWorkspaces()`` to get all existed workspaces on start, and
 /// use observers in the ``Extension`` type to determine if you need to create or destroy a service.
-//
-
 final class SuggestionService: SuggestionServiceType {
     /// You can pass the extension instance to the service so you can communicate to the host.
     weak var ext: Extension?
 
+    /// Provide a configuration so that the app knows how to send the requests.
     var configuration: SuggestionServiceConfiguration {
-        /// Not implemented yet.
         .init(
             acceptsRelevantCodeSnippets: true,
             mixRelevantCodeSnippetsInSource: false,

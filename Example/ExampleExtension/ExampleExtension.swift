@@ -5,7 +5,11 @@ import Foundation
 /// mark it as the main entry point.
 @main
 class Extension: CopilotForXcodeExtension {
+    
+    /// 1. Provide a suggestion service if needed. You can simply give it a default value here.
     var suggestionService: SuggestionService?
+    
+    /// 2. Provide a scene configuration if needed. You can simply give it a default value here.
     var sceneConfiguration = SceneConfiguration()
 
     required init() {
@@ -15,6 +19,9 @@ class Extension: CopilotForXcodeExtension {
         /// If you need to access the global ``HostServer`` from the services.
         service.ext = self
     }
+    
+    /// 3. Set up the observers to keep track of the events from Xcode.
+    //
 
     /// When this method is called, the ``host`` property will be set automatically.
     func connectionDidActivate(connectedTo host: HostServer) {
@@ -26,8 +33,18 @@ class Extension: CopilotForXcodeExtension {
     /// You can use these optional methods to observe changes in the workspace.
     /// Check the ``CopilotForXcodeExtension`` protocol for details.
     //
-    
+
     func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL) {
+        for tab in runningChatTabs {
+            Task {
+                /// You can forward the notification to all running chat tabs by posting
+                /// a notification.
+                try await tab.postNotification(
+                    name: "Extension.workspaceDidOpenDocument",
+                    info: documentURL
+                )
+            }
+        }
         Task {
             try await host?.toast("Opened \(documentURL.lastPathComponent)")
         }
@@ -42,3 +59,4 @@ class Extension: CopilotForXcodeExtension {
 
 /// Everything has a default implementation.
 class EmptyExtension: CopilotForXcodeExtension {}
+

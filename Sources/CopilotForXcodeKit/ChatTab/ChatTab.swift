@@ -10,7 +10,7 @@ public typealias ExtensionCustomChatTab = ExtensionCustomChatTabBase & Extension
 public protocol ExtensionCustomChatTabType {
     /// Handle method calls from the actual chat tab.
     ///
-    /// If you are using a web view chat tab, you may need to implement this method to maintain the
+    /// If you are using a web view chat tab, you need to implement this method to maintain the
     /// the communication between the chat tab, the host app and your extension.
     ///
     /// - Parameters:
@@ -18,9 +18,14 @@ public protocol ExtensionCustomChatTabType {
     ///   - arguments: The arguments of the method as a `Data` object of JSON.
     /// - Returns: The result of the method call as a `Data` object of JSON.
     ///
-    /// - note: The arguments are defined by you. Usually you can use a ``Codable`` type to represent the
-    /// arguments. In the Javascript side you can pass it as an object, the object will be
-    /// serialized into a JSON object.
+    /// - note: You should define the format of arguments and return value and make sure the
+    /// definitions are the same on both end. They can be a ``Codable`` object that can be
+    /// converted into JSON, a number, a string or a date.
+    ///
+    /// In the Javascript side, you can call this method by:
+    /// ```javascript
+    /// const result = await window.theExtension.call(method, arguments);
+    /// ```
     func handleMethodCall(name: String, arguments: Data) async throws -> Data
     /// Called when the chat tab is loaded.
     ///
@@ -61,6 +66,13 @@ open class ExtensionCustomChatTabBase {
     }
 
     /// Post a notification to the chat tab.
+    ///
+    /// In the Javascript side, you can listen to the notification by:
+    /// ```javascript
+    /// document.addEventListener(name, (event) => {
+    ///     const info = event.detail;
+    /// });
+    /// ```
     public func postNotification<T: Codable>(name: String, info: T) async throws {
         let data = try JSONEncoder().encode(info)
         _ = try await host.send(HostRequests.PostNotificationToChatTab(
