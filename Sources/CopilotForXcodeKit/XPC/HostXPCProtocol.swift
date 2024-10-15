@@ -86,6 +86,14 @@ public enum HostRequests {
         public typealias ResponseBody = XcodeInfo
         public static let endpoint = "GetXcodeInformation"
     }
+    
+    public struct PostNotificationToChatTab: HostRequestType {
+        public var chatTabId: String
+        public var name: String
+        public var info: Data
+        public typealias ResponseBody = NoResponse
+        public static let endpoint = "PostNotificationToChatTab"
+    }
 }
 
 /// The host server, aka the ExtensionService of Copilot for Xcode.app.

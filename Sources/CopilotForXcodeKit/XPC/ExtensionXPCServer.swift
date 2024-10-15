@@ -9,17 +9,22 @@ public struct ExtensionInfo: Codable {
     /// The version of the protocol. It should be updated when there is a breaking change.
     public private(set) var version: Int = 1
     /// Whether the extension provides a suggestion service.
+    @FallbackDecoding<EmptyBool>
     public var providesSuggestionService: Bool
     /// The configuration of the suggestion service.
     public var suggestionServiceConfiguration: SuggestionServiceConfiguration?
     /// Whether the extension provides a chat service.
+    @FallbackDecoding<EmptyBool>
     public var providesChatService: Bool
     /// Whether the extension provides a prompt to code service.
+    @FallbackDecoding<EmptyBool>
     public var providesPromptToCodeService: Bool
     /// Whether the extension provides a configuration scene.
+    @FallbackDecoding<EmptyBool>
     public var hasConfigurationScene: Bool
-    /// Chat panel scenes available.
-    public var chatPanelSceneInfo: [ChatPanelSceneInfo]
+    /// Chat tabs available.
+    @FallbackDecoding<EmptyArray>
+    public var chatTabInfo: [ExtensionChatTabInfo]
 }
 
 /// The protocol of the extension server. You don't have to worry about implementing it yourself.
@@ -228,6 +233,81 @@ public enum ExtensionRequests {
             }
         }
     }
+
+    public enum ChatTab {
+        public struct Create: ExtensionRequestType {
+            public var chatTabId: String
+            public var chatTabInfo: ExtensionChatTabInfo
+            public struct ResponseBody: Codable {
+                public var chatTabId: String
+                public var kind: ExtensionChatTabInfo.Kind
+            }
+
+            public static let endpoint = "ChatTab/Create"
+
+            public init(chatTabId: String, chatTabInfo: ExtensionChatTabInfo) {
+                self.chatTabId = chatTabId
+                self.chatTabInfo = chatTabInfo
+            }
+        }
+
+        public struct NotifyLoaded: ExtensionRequestType {
+            public var chatTabId: String
+            public typealias ResponseBody = NoResponse
+            public static let endpoint = "ChatTab/NotifyLoaded"
+
+            public init(chatTabId: String) {
+                self.chatTabId = chatTabId
+            }
+        }
+
+        public struct NotifyClosed: ExtensionRequestType {
+            public var chatTabId: String
+            public typealias ResponseBody = NoResponse
+            public static let endpoint = "ChatTab/NotifyClosed"
+
+            public init(chatTabId: String) {
+                self.chatTabId = chatTabId
+            }
+        }
+
+        public struct NotifyActive: ExtensionRequestType {
+            public var chatTabId: String
+            public typealias ResponseBody = NoResponse
+            public static let endpoint = "ChatTab/NotifyActive"
+
+            public init(chatTabId: String) {
+                self.chatTabId = chatTabId
+            }
+        }
+
+        public struct NotifyResignActive: ExtensionRequestType {
+            public var chatTabId: String
+            public typealias ResponseBody = NoResponse
+            public static let endpoint = "ChatTab/NotifyResignActive"
+
+            public init(chatTabId: String) {
+                self.chatTabId = chatTabId
+            }
+        }
+
+        public struct CallMethod: ExtensionRequestType {
+            public var chatTabId: String
+            public var name: String
+            public var arguments: Data
+            public struct ResponseBody: Codable {
+                public var response: Data
+            }
+
+            public static let endpoint = "ChatTab/CallMethod"
+
+            public init(chatTabId: String, name: String, arguments: Data) {
+                self.chatTabId = chatTabId
+                self.name = name
+                self.arguments = arguments
+            }
+        }
+    }
 }
 
 // MARK: - XPC Server Implementation
@@ -360,51 +440,150 @@ final class ExtensionXPCServer: NSObject, ExtensionXPCProtocol {
                 return .none
             }
 
-            try ExtensionRequests.SuggestionService.GetSuggestions.handle(
-                endpoint: endpoint,
-                requestBody: requestBody,
-                reply: reply
-            ) { [theExtension] request in
-                let service = theExtension.suggestionService
-                if service is NoSuggestionService { return .init(suggestions: []) }
-                let suggestions = try await service.getSuggestions(
-                    request.request,
-                    workspace: request.workspace
-                )
-                return .init(suggestions: suggestions)
+            do { // MARK: SuggestionService
+                try ExtensionRequests.SuggestionService.GetSuggestions.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let service = theExtension.suggestionService
+                    if service is NoSuggestionService { return .init(suggestions: []) }
+                    let suggestions = try await service.getSuggestions(
+                        request.request,
+                        workspace: request.workspace
+                    )
+                    return .init(suggestions: suggestions)
+                }
+
+                try ExtensionRequests.SuggestionService.NotifyAccepted.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let service = theExtension.suggestionService
+                    if service is NoSuggestionService { return .none }
+                    await service.notifyAccepted(request.suggestion, workspace: request.workspace)
+                    return .none
+                }
+
+                try ExtensionRequests.SuggestionService.NotifyRejected.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let service = theExtension.suggestionService
+                    if service is NoSuggestionService { return .none }
+                    await service.notifyRejected(request.suggestions, workspace: request.workspace)
+                    return .none
+                }
+
+                try ExtensionRequests.SuggestionService.CancelRequest.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let service = theExtension.suggestionService
+                    if service is NoSuggestionService { return .none }
+                    await service.cancelRequest(workspace: request.workspace)
+                    return .none
+                }
             }
 
-            try ExtensionRequests.SuggestionService.NotifyAccepted.handle(
-                endpoint: endpoint,
-                requestBody: requestBody,
-                reply: reply
-            ) { [theExtension] request in
-                let service = theExtension.suggestionService
-                if service is NoSuggestionService { return .none }
-                await service.notifyAccepted(request.suggestion, workspace: request.workspace)
-                return .none
-            }
+            do { // MARK: ChatTab
+                try ExtensionRequests.ChatTab.Create.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let id = request.chatTabId
+                    let info = request.chatTabInfo
+                    guard let host = theExtension.host else {
+                        throw CancellationError()
+                    }
+                    let newTab = try theExtension.sceneConfiguration.createChatTab(
+                        id: id,
+                        chatTabInfo: info,
+                        host: host
+                    )
+                    theExtension.runningChatTabs.append(newTab)
+                    return .init(chatTabId: id, kind: newTab.kind)
+                }
 
-            try ExtensionRequests.SuggestionService.NotifyRejected.handle(
-                endpoint: endpoint,
-                requestBody: requestBody,
-                reply: reply
-            ) { [theExtension] request in
-                let service = theExtension.suggestionService
-                if service is NoSuggestionService { return .none }
-                await service.notifyRejected(request.suggestions, workspace: request.workspace)
-                return .none
-            }
+                try ExtensionRequests.ChatTab.NotifyLoaded.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let id = request.chatTabId
+                    guard let tab = theExtension.runningChatTabs.first(where: { $0.id == id })
+                    else {
+                        throw CancellationError()
+                    }
+                    tab.chatTabDidLoad()
+                    return .none
+                }
 
-            try ExtensionRequests.SuggestionService.CancelRequest.handle(
-                endpoint: endpoint,
-                requestBody: requestBody,
-                reply: reply
-            ) { [theExtension] request in
-                let service = theExtension.suggestionService
-                if service is NoSuggestionService { return .none }
-                await service.cancelRequest(workspace: request.workspace)
-                return .none
+                try ExtensionRequests.ChatTab.NotifyClosed.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let id = request.chatTabId
+                    guard let tab = theExtension.runningChatTabs.first(where: { $0.id == id })
+                    else {
+                        throw CancellationError()
+                    }
+                    tab.chatTabDidClose()
+                    theExtension.runningChatTabs.removeAll(where: { $0.id == id })
+                    return .none
+                }
+
+                try ExtensionRequests.ChatTab.NotifyActive.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let id = request.chatTabId
+                    guard let tab = theExtension.runningChatTabs.first(where: { $0.id == id })
+                    else {
+                        throw CancellationError()
+                    }
+                    tab.chatTabDidBecomeActive()
+                    return .none
+                }
+
+                try ExtensionRequests.ChatTab.NotifyResignActive.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let id = request.chatTabId
+                    guard let tab = theExtension.runningChatTabs.first(where: { $0.id == id })
+                    else {
+                        throw CancellationError()
+                    }
+                    tab.chatTabDidResignActive()
+                    return .none
+                }
+
+                try ExtensionRequests.ChatTab.CallMethod.handle(
+                    endpoint: endpoint,
+                    requestBody: requestBody,
+                    reply: reply
+                ) { [theExtension] request in
+                    let id = request.chatTabId
+                    guard let tab = theExtension.runningChatTabs.first(where: { $0.id == id })
+                    else {
+                        throw CancellationError()
+                    }
+
+                    let response = try await tab.handleMethodCall(
+                        name: request.name,
+                        arguments: request.arguments
+                    )
+
+                    return .init(response: response)
+                }
             }
 
         } catch is XPCRequestHandlerHitError {
