@@ -28,18 +28,23 @@ public protocol CopilotForXcodeExtensionSceneConfiguration {
     ///
     /// You can also return nil here and handle the configurations in your own app.
     var configurationScene: ConfigurationScene<ConfigurationBody>? { get }
-    /// Not implemented yet.
-    ///
     /// The chat panel scenes. Please use ``ChatPanelScene`` to define each scene.
     /// - Note: You have to provide this value if you provide `chatPanelScenes`. The app
     ///   uses this information to show the available chat panel scenes to users.
     @ChatPanelSceneBuilder var chatPanelScenes: ChatPanelSceneGroup? { get }
-    /// Not implemented yet.
+    /// The chat tab factory.
     ///
+    /// If you are providing any chat tab, you have to provide the implementation here.
+    /// You can create sub-types of `ChatTab` to provide custom implementations.
+    func createChatTab(
+        id: String,
+        chatTabInfo: ExtensionChatTabInfo,
+        host: HostServer
+    ) throws -> any ExtensionCustomChatTab
     /// The information of the available chat panel scenes.
     /// - Note: You have to provide this value if you provide `chatPanelScenes`. The app
     ///   uses this information to show the available chat panel scenes to users.
-    var chatPanelSceneInfo: [ChatPanelSceneInfo] { get }
+    var chatTabInfo: [ExtensionChatTabInfo] { get }
 }
 
 @available(macOS 13.0, *)
@@ -53,7 +58,21 @@ public struct NoSceneConfiguration: CopilotForXcodeExtensionSceneConfiguration {
 
     public var chatPanelScenes: Group? { return nil }
 
-    public var chatPanelSceneInfo: [ChatPanelSceneInfo] { [] }
+    public func createChatTab(
+        id: String,
+        chatTabInfo: ExtensionChatTabInfo,
+        host: HostServer
+    ) throws -> ExtensionCustomChatTab {
+        throw NoChatTabError()
+    }
+
+    public var chatTabInfo: [ExtensionChatTabInfo] { [] }
+
+    struct NoChatTabError: Error, LocalizedError {
+        var errorDescription: String? {
+            "No chat tab is provided."
+        }
+    }
 }
 
 @available(macOS 13.0, *)
@@ -80,8 +99,12 @@ public extension CopilotForXcodeExtensionSceneConfiguration where ChatPanelScene
         return nil
     }
 
-    var chatPanelSceneInfo: [ChatPanelSceneInfo] {
+    var chatPanelSceneInfo: [ExtensionChatTabInfo] {
         return []
+    }
+
+    func createChatTab(id: UUID, host: HostServer) throws -> ExtensionCustomChatTab {
+        throw NoSceneConfiguration.NoChatTabError()
     }
 }
 
@@ -127,7 +150,9 @@ open class CopilotForXcodeSceneModel: ObservableObject {
         connection.exportedInterface = NSXPCInterface(with: XPCProtocol.self)
         connection.remoteObjectInterface = NSXPCInterface(with: HostXPCProtocol.self)
         host = HostServer(connection)
-        isConnected = true
+        Task { @MainActor in
+            isConnected = true
+        }
     }
 }
 
@@ -157,49 +182,6 @@ public struct ConfigurationScene<
             Logger.info("Configuration scene did receive connection.")
             self.sceneModel.connect(to: connection)
             return self.onConnection(connection)
-        }
-    }
-}
-
-public struct ChatPanelSceneInfo: Codable {
-    public let id: String
-    public let title: String
-
-    public init(id: String, title: String) {
-        self.id = id
-        self.title = title
-    }
-}
-
-/// A scene for chat panel view.
-@available(macOS 13.0, *)
-public struct ChatPanelScene<
-    Content: View
->: CopilotForXcodeAppExtensionScene {
-    public let id: String
-    public let sceneModel: CopilotForXcodeSceneModel
-    public let content: (CopilotForXcodeSceneModel) -> Content
-    public let onConnection: (NSXPCConnection) -> Bool
-
-    public init(
-        id: String,
-        sceneModel: CopilotForXcodeSceneModel = .init(),
-        @ViewBuilder content: @escaping (CopilotForXcodeSceneModel) -> Content,
-        onConnection: @escaping (NSXPCConnection) -> Bool
-    ) {
-        self.id = id
-        self.sceneModel = sceneModel
-        self.content = content
-        self.onConnection = onConnection
-    }
-
-    public var body: some AppExtensionScene {
-        PrimitiveAppExtensionScene(id: id) {
-            content(sceneModel)
-        } onConnection: { connection in
-            Logger.info("Chat panel scene did receive connection.")
-            sceneModel.connect(to: connection)
-            return onConnection(connection)
         }
     }
 }

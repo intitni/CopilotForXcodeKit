@@ -1,3 +1,4 @@
+import CodableWrappers
 import ExtensionFoundation
 import ExtensionKit
 import Foundation
@@ -61,6 +62,9 @@ open class CopilotForXcodeExtensionBase {
     ///
     /// You don't have to worry about it's value, it will be set once the connection is ready.
     public internal(set) var host: HostServer?
+    
+    /// Chat tabs that are running.
+    public internal(set) var runningChatTabs: [ExtensionCustomChatTab] = []
 
     /// The usage of this extension in Copilot for Xcode.
     ///
@@ -201,7 +205,7 @@ extension CopilotForXcodeExtensionProtocol {
             providesChatService: !(chatService is NoChatService),
             providesPromptToCodeService: !(promptToCodeService is NoPromptToCodeService),
             hasConfigurationScene: sceneConfiguration.hasConfigurationScene,
-            chatPanelSceneInfo: sceneConfiguration.chatPanelSceneInfo
+            chatTabInfo: sceneConfiguration.chatTabInfo
         )
     }
 }
@@ -301,8 +305,10 @@ public extension CopilotForXcodeExtensionConfiguration {
 
 public struct ExtensionUsage: Codable, Equatable {
     /// If the suggestion service in this extension is in use.
+    @FallbackDecoding<EmptyBool>
     public var isSuggestionServiceInUse: Bool
     /// If the chat service in this extension is in use.
+    @FallbackDecoding<EmptyBool>
     public var isChatServiceInUse: Bool
 
     public init(isSuggestionServiceInUse: Bool, isChatServiceInUse: Bool) {
