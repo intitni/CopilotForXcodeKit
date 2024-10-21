@@ -1,4 +1,4 @@
-#  Creating Web View Custom Chat Tab
+# Creating Web View Custom Chat Tab
 
 Learn how to create a custom chat tab using a WebView. 
 
@@ -53,6 +53,8 @@ var chatTabInfo: [ExtensionChatTabInfo] {
 In ``CopilotForXcodeExtensionConfiguration\createChatTab``, you should return a custom chat tab based on the ``ExtensionChatTabInfo``. This function will be called when the user creates a chat tab. 
 
 You can use the ``ExtensionChatTabInfo\kindId`` to determine which chat tab to create. The chat tab instance will then be added to the ``CopilotForXcodeExtension\runningChatTabs``. You can use the instance to maintain the communication between the chat tab and the extension.
+
+The kind of the chat tab must be `.webView(...)`. The content can be either a raw `.html(htmlString)` or a `.url(url)`.
 
 ```swift
 func createChatTab(
