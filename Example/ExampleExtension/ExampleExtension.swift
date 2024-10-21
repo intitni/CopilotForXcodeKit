@@ -1,7 +1,7 @@
 import CopilotForXcodeKit
 import Foundation
 
-/// Typically, you must implement a sub class of ``CopilotForXcodeExtension`` and
+/// Typically, you must implement a sub class of ``CopilotForXcodeKit\CopilotForXcodeExtension`` and
 /// mark it as the main entry point.
 @main
 class Extension: CopilotForXcodeExtension {
@@ -23,7 +23,8 @@ class Extension: CopilotForXcodeExtension {
     /// 3. Set up the observers to keep track of the events from Xcode.
     //
 
-    /// When this method is called, the ``host`` property will be set automatically.
+    /// When this method is called, the ``CopilotForXcodeKit\CopilotForXcodeExtension\host``
+    /// property will be set automatically.
     func connectionDidActivate(connectedTo host: HostServer) {
         Task {
             try await host.toast("Connected to Example Extension")
@@ -31,7 +32,7 @@ class Extension: CopilotForXcodeExtension {
     }
 
     /// You can use these optional methods to observe changes in the workspace.
-    /// Check the ``CopilotForXcodeExtension`` protocol for details.
+    /// Check the ``CopilotForXcodeKit\CopilotForXcodeExtension`` protocol for details.
     //
 
     func workspace(_ workspace: WorkspaceInfo, didOpenDocumentAt documentURL: URL) {
